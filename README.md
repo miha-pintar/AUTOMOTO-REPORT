@@ -43,6 +43,30 @@ SESSION_DAYS=30 npm run dev
 
 Na static hostingu, kot je GitHub Pages, prijava deluje samo kot client-side zaklep. Za pravo zascito podatkov uporabi Node server ali hosting, ki podpira backend avtentikacijo.
 
+## Share URL brez gesla
+
+Node server podpira tudi view-only dostop prek unikatnega share URL-ja:
+
+```text
+http://localhost:5173/share/ga-adriatic-2026-share-a8f4c2d9
+```
+
+Kdor odpre ta link, dobi view-only sejo brez vnosa gesla. Admin funkcije, kot je uvoz CSV/XLS, ostanejo skrite.
+
+Share token lahko zamenjas z environment spremenljivko `SHARE_TOKEN`:
+
+```bash
+SHARE_TOKEN="unikaten-zakljucek-linka" npm run dev
+```
+
+Potem je share link:
+
+```text
+http://localhost:5173/share/unikaten-zakljucek-linka
+```
+
+Ce zamenjas `SHARE_TOKEN`, stari share URL ne deluje vec za nove obiske.
+
 ## GitHub Pages
 
 Projekt je pripravljen kot static site za GitHub Pages. Objavi lahko vse datoteke iz root mape repozitorija:

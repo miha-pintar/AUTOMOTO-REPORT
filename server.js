@@ -10,6 +10,7 @@ const passwords = {
   admin: process.env.ADMIN_PASSWORD || "Epi123!",
   viewer: process.env.VIEWER_PASSWORD || "GAreport997!"
 };
+const shareToken = process.env.SHARE_TOKEN || "ga-adriatic-2026-share-a8f4c2d9";
 const sessionSecret = process.env.SESSION_SECRET || `${passwords.admin}:${passwords.viewer}:automoto-report`;
 
 const contentTypes = {
@@ -96,6 +97,24 @@ function verifySessionToken(token) {
 
 function signSessionPayload(encodedPayload) {
   return createHmac("sha256", sessionSecret).update(encodedPayload).digest("base64url");
+}
+
+async function readIndexHtml({ rootBase = false } = {}) {
+  const file = await readFile(join(root, "index.html"), "utf8");
+  return rootBase ? file.replace("<head>", '<head>\n    <base href="/" />') : file;
+}
+
+function isValidSharePath(pathname) {
+  const match = pathname.match(/^\/share\/([^/]+)\/?$/);
+  if (!match) return false;
+
+  const providedTokenBuffer = Buffer.from(match[1]);
+  const shareTokenBuffer = Buffer.from(shareToken);
+
+  return (
+    providedTokenBuffer.length === shareTokenBuffer.length &&
+    timingSafeEqual(providedTokenBuffer, shareTokenBuffer)
+  );
 }
 
 function sendJson(res, status, body, headers = {}) {
@@ -197,11 +216,28 @@ createServer(async (req, res) => {
   }
 
   try {
+    if (isValidSharePath(pathname)) {
+      const file = await readIndexHtml({ rootBase: true });
+      const headers = {
+        "Content-Type": contentTypes[".html"],
+        "Cache-Control": "no-store"
+      };
+
+      if (!session) {
+        const token = createSessionToken("viewer");
+        headers["Set-Cookie"] = `automoto_session=${encodeURIComponent(token)}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${sessionTtlSeconds}`;
+      }
+
+      res.writeHead(200, headers);
+      res.end(file);
+      return;
+    }
+
     if (!session && !isPublicPath(pathname)) {
       const hasExtension = Boolean(extname(filePath));
 
       if (!hasExtension) {
-        const file = await readFile(join(root, "index.html"));
+        const file = await readIndexHtml();
         res.writeHead(200, {
           "Content-Type": contentTypes[".html"],
           "Cache-Control": "no-store"
@@ -225,7 +261,7 @@ createServer(async (req, res) => {
     const hasExtension = Boolean(extname(filePath));
 
     if (!hasExtension) {
-      const file = await readFile(join(root, "index.html"));
+      const file = await readIndexHtml();
       res.writeHead(200, {
         "Content-Type": contentTypes[".html"],
         "Cache-Control": "no-store"
