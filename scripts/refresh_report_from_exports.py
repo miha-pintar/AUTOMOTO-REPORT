@@ -49,13 +49,25 @@ POSITIVE_WORDS = [
     "lepa",
     "najbol",
     "všeč",
+    "hud",
     "hudo",
     "perfekt",
     "kras",
+    "čudovit",
+    "dober",
+    "fajn",
+    "zmaga",
+    "navdu",
+    "komaj čakam",
+    "komaj cakam",
+    "takoj bi ga imel",
+    "mindblowing",
     "love",
     "😍",
+    "🤩",
     "🔥",
     "👏",
+    "🙌",
     "❤️",
 ]
 
@@ -74,6 +86,130 @@ NEGATIVE_WORDS = [
     "preveč",
     "ni mi",
     "nikoli",
+    "manjka",
+    "skret",
+    "mimo",
+    "nateg",
+    "glupo",
+    "debilno",
+    "zabloda",
+    "oslep",
+    "zaslep",
+]
+
+STRONG_POSITIVE_PATTERNS = [
+    (r"super avto", 4),
+    (r"\bhud je\b", 3),
+    (r"\bhudo\b", 2),
+    (r"\btop\b", 2),
+    (r"\bbravo\b", 2),
+    (r"\bčudovit\b", 3),
+    (r"\bkomaj cakam\b|\bkomaj čakam\b", 3),
+    (r"\btakoj bi ga imel\b", 5),
+    (r"\bizredno presene", 3),
+    (r"\bzmaga\b", 2),
+    (r"\bmindblowing\b", 3),
+    (r"\bto je prihodnost\b", 3),
+    (r"\btole mora postat stalnica\b", 4),
+    (r"\bkok dobr\b|\bkako dobr\b", 3),
+    (r"\brumen\b", 2),
+    (r"🔥|😍|🤩|🙌|❤️|❤|♥", 1),
+]
+
+STRONG_NEGATIVE_PATTERNS = [
+    (r"\bdelate norca\b", 5),
+    (r"\bzopet manjka\b|\bspet manjka\b", 4),
+    (r"\bmanjka\b", 1),
+    (r"\b10k predrag\b", 5),
+    (r"\bpredrag\b", 4),
+    (r"\bpreveč\b.*\bdrag", 4),
+    (r"\bskret\b", 6),
+    (r"\bkoj grd\b|\bkako grd\b", 5),
+    (r"\bgrd\b", 3),
+    (r"\bkaj je s temi\b", 3),
+    (r"\bmalo mimo\b", 3),
+    (r"\bneka hvala\b", 4),
+    (r"\bne bo nikoli\b", 4),
+    (r"\bzabloda\b", 5),
+    (r"\bnateg\b", 6),
+    (r"\bglupo\b", 5),
+    (r"\bdebilno\b", 6),
+    (r"\boslepijo\b|\bzaslepi\b", 4),
+    (r"\bza časom\b|\bza casom\b", 3),
+]
+
+NEGATIVE_OVERRIDE_PATTERNS = [
+    r"\bpredrag\b|\bdrag\b",
+    r"\bcena\b.*\bhi(s|š)o\b|\bmalo hi(s|š)o\b",
+    r"\bdelate norca\b",
+    r"\bskret\b",
+    r"\bgrd\b",
+    r"\bnateg\b",
+    r"\bglupo\b",
+    r"\bdebilno\b",
+    r"\bzabloda\b",
+    r"\boslepijo\b|\bzaslepi\b",
+]
+
+QUESTION_PATTERNS = [
+    r"\ba je\b",
+    r"\bali\b",
+    r"\bkaj\b",
+    r"\bkako\b",
+    r"\bkoliko\b",
+    r"\bvprasanje\b|\bvprašanje\b",
+    r"\bzanima\b",
+    r"\bje opcija\b",
+    r"\bv čem\b|\bv cem\b",
+]
+
+CONSTRUCTIVE_PATTERNS = [
+    r"\bdober bi bilo\b|\bdobro bi bilo\b",
+    r"\bobjavite\b",
+    r"\btrasa\b",
+    r"\bpodatke\b",
+    r"\bvreme\b",
+    r"\btemperaturo\b",
+    r"\bna koliko časa\b|\bna koliko casa\b",
+    r"\bpregledat\b",
+    r"\bpotrebno\b",
+    r"\bzdržijo\b|\bzdrzijo\b",
+    r"\bvlečne sile\b|\bvlecne sile\b",
+    r"\bmotorje\b",
+    r"\bpogon\b",
+    r"\bporaba\b",
+]
+
+AMBIGUOUS_PATTERNS = [
+    r"\buh\b.*\bno comment\b",
+]
+
+PERSON_FOCUSED_PATTERNS = [
+    r"\bfaca vedno\b",
+    r"\bbravo det\b",
+]
+
+SOFT_NEUTRAL_PATTERNS = [
+    r"\bmanjka samo še\b|\bmanjka samo se\b",
+]
+
+FEATURE_TERMS = [
+    "luči",
+    "luci",
+    "žaromet",
+    "zaromet",
+    "ekran",
+    "poraba",
+    "trasa",
+    "pogon",
+    "motor",
+    "hibrid",
+    "vodik",
+    "elektr",
+    "tlačne posode",
+    "tlacne posode",
+    "vlečne sile",
+    "vlecne sile",
 ]
 
 
@@ -526,14 +662,70 @@ def build_best_content(ranked):
     return items
 
 
+def count_matches(text, patterns):
+    score = 0
+    for pattern, weight in patterns:
+        if re.search(pattern, text, flags=re.IGNORECASE):
+            score += weight
+    return score
+
+
+def has_pattern(text, patterns):
+    return any(re.search(pattern, text, flags=re.IGNORECASE) for pattern in patterns)
+
+
 def sentiment_for_comment(text):
-    lower = text.lower()
-    positive = sum(1 for word in POSITIVE_WORDS if word in lower)
-    negative = sum(1 for word in NEGATIVE_WORDS if word in lower)
-    if positive > negative:
+    lower = text.lower().strip()
+    if not lower:
+        return "neutral"
+
+    if has_pattern(lower, SOFT_NEUTRAL_PATTERNS):
+        return "neutral"
+
+    if has_pattern(lower, AMBIGUOUS_PATTERNS):
+        return "neutral"
+
+    if has_pattern(lower, PERSON_FOCUSED_PATTERNS):
+        return "neutral"
+
+    positive = sum(1 for word in POSITIVE_WORDS if word in lower) + count_matches(lower, STRONG_POSITIVE_PATTERNS)
+    negative = sum(1 for word in NEGATIVE_WORDS if word in lower) + count_matches(lower, STRONG_NEGATIVE_PATTERNS)
+
+    is_question = "?" in lower or has_pattern(lower, QUESTION_PATTERNS)
+    is_constructive = has_pattern(lower, CONSTRUCTIVE_PATTERNS)
+    has_negative_override = has_pattern(lower, NEGATIVE_OVERRIDE_PATTERNS)
+
+    if positive >= 3 and negative == 0:
         return "positive"
+
+    if is_question and negative <= 1 and positive <= 2:
+        return "neutral"
+
+    if is_constructive and negative == 0:
+        return "neutral"
+
+    if has_negative_override and negative >= positive:
+        return "negative"
+
+    if negative >= positive + 2:
+        return "negative"
+
+    if positive >= negative + 2:
+        return "positive"
+
+    if positive and negative:
+        if has_negative_override:
+            return "negative"
+        if is_question or is_constructive:
+            return "neutral"
+        return "neutral"
+
     if negative > positive:
         return "negative"
+
+    if positive > negative:
+        return "positive"
+
     return "neutral"
 
 
@@ -550,6 +742,8 @@ def comment_target(text, model_terms, allowed_brands):
         return "Price / value"
     if any(term in lower for term in ["lep", "lepa", "grd", "oblika", "dizajn", "design", "zgleda", "izgleda"]):
         return "Design / appearance"
+    if any(term in lower for term in FEATURE_TERMS):
+        return "Vehicle feature / usage"
     vehicle_terms = ["avto", "vozilo", "model", "motor", "notranjost", "oblika", "cena", "test"]
     if any(term in lower for term in vehicle_terms):
         return "Vehicle / model"
@@ -573,6 +767,14 @@ def is_meaningful_opinion(comment, model_terms, allowed_brands):
         "vozil",
         "primerj",
         "preprič",
+        "zanima",
+        "poraba",
+        "trasa",
+        "ekran",
+        "luči",
+        "luci",
+        "vlečne",
+        "vlecne",
     ]
     return any(term in lower for term in opinion_terms)
 

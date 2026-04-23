@@ -139,6 +139,14 @@ Refresh procedure:
    - Determine overall sentiment as `positive`, `neutral`, or `negative`.
    - Set `commentsAnalysed` to the number of comments actually reviewed.
    - Summarize useful qualitative findings for the client where the current JSON/UI supports them.
+   - Use Slovenian comment context, not literal word counting only. Evaluate phrases, intensifiers, sarcasm hints, price complaints, and whether the user is asking a constructive question.
+   - Treat clearly positive praise such as `super`, `hud`, `hudo`, `top`, `bravo`, `čudovit`, `takoj bi ga imel`, `komaj čakam`, heart/heart-eyes/fire/star-struck style emoji (`❤️`, `😍`, `🤩`, `🔥`, `🙌`) as positive unless a stronger negative complaint changes the meaning.
+   - Treat clearly negative cues such as `delate norca`, `zopet manjka`, `manjka` in complaint context, `predrag`, `10k predrag`, `skret`, `grd`, `koj grd`, `kaj je s temi`, `malo mimo`, `neka hvala`, `zabloda`, `nateg`, `glupo`, `debilno`, or complaints about glare/safety (`zaslepi`, `oslepijo`) as negative.
+   - When a comment mixes praise with a clear objection, let the stronger complaint decide the final sentiment. Typical examples: praise plus price objection (`top, sam 10k predrag`) should be negative; praise plus strong product criticism should also be negative.
+   - Treat constructive information-seeking comments as `neutral` unless they also contain a clear positive or negative judgment. This includes questions about specs, routes, fuel use, towing, screens, service intervals, subscriptions, and similar product-use topics.
+   - Treat comments that request more of a content format or show useful curiosity about the test/video as positive in tone even when phrased as a request, for example wanting more such videos, asking for route details, or praising the usefulness of the format.
+   - Treat person-only banter or creator-focused jokes as low-priority for brand sentiment; usually leave them `neutral` unless they clearly praise or criticize the vehicle/brand/campaign itself.
+   - Treat ambiguous remarks such as `Uh... no comment` as `neutral` unless nearby wording or emoji clearly disambiguate the tone.
    - When useful, identify up to five representative positive comments and up to five representative negative comments that express an opinion about the brand, model, vehicle, price, design, feature, or campaign topic. Avoid generic comments such as only "super" or emoji-only reactions when better examples exist.
 8. When all brand files for the period are available, create or update the overall/benchmark summary across brands:
    - Compare total activity, impressions, engagement rate, strongest formats, strongest themes, promoted models, and qualitative sentiment.
