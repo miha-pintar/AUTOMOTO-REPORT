@@ -1,5 +1,6 @@
 const dataUrl = "./data/report-data.json";
 const authStorageKey = "automoto-report-auth";
+const mediaStorageKey = "automoto-report-media-urls";
 const authStorage = window.localStorage;
 const saveStatusDuration = 2400;
 const defaultPasswords = {
@@ -118,6 +119,7 @@ async function loadReport() {
   }
 
   state.data = await response.json();
+  applyStoredMediaUrls();
   state.activePeriodId = state.data.activePeriodId || state.data.periods[0]?.id;
 }
 
@@ -830,6 +832,7 @@ function handleBestContentInput(event) {
   if (!item || (field !== "imageUrl" && field !== "videoUrl")) return;
 
   item[field] = input.value.trim();
+  storeMediaUrlOverride(brandIndex, contentIndex, field, item[field]);
   updateBestContentMedia(brandIndex, contentIndex, item);
   showSaveStatus(brandIndex, contentIndex, "Saving...");
   scheduleReportSave(brandIndex, contentIndex);
@@ -840,15 +843,98 @@ function getEditableBestContentItem(brandIndex, contentIndex) {
   const brand = getBrands(period)[brandIndex];
   if (!brand) return null;
 
-  brand.report = brand.report || {};
-  if (!Array.isArray(brand.report.bestContent)) {
-    const totalEngagement = toNumber(brand.likes) + toNumber(brand.comments);
-    const videoPosts = toNumber(brand.videoPosts || brand.reels);
-    const photoPosts = toNumber(brand.photoPosts || brand.staticPosts || brand.posts);
-    brand.report.bestContent = buildBrandReport(brand, { totalEngagement, videoPosts, photoPosts }).bestContent;
-  }
+  ensureBestContent(brand);
 
   return brand.report.bestContent[contentIndex] || null;
+}
+
+function ensureBestContent(brand) {
+  brand.report = brand.report || {};
+  if (Array.isArray(brand.report.bestContent)) return brand.report.bestContent;
+
+  const totalEngagement = toNumber(brand.likes) + toNumber(brand.comments);
+  const videoPosts = toNumber(brand.videoPosts || brand.reels);
+  const photoPosts = toNumber(brand.photoPosts || brand.staticPosts || brand.posts);
+  brand.report.bestContent = buildBrandReport(brand, { totalEngagement, videoPosts, photoPosts }).bestContent;
+  return brand.report.bestContent;
+}
+
+function storeMediaUrlOverride(brandIndex, contentIndex, field, value) {
+  const period = getActivePeriod();
+  if (!period?.id || (field !== "imageUrl" && field !== "videoUrl")) return;
+
+  const overrides = readStoredMediaUrls();
+  overrides[period.id] = overrides[period.id] || {};
+  overrides[period.id][brandIndex] = overrides[period.id][brandIndex] || {};
+  overrides[period.id][brandIndex][contentIndex] = overrides[period.id][brandIndex][contentIndex] || {};
+  overrides[period.id][brandIndex][contentIndex][field] = value;
+
+  try {
+    authStorage.setItem(mediaStorageKey, JSON.stringify(overrides));
+  } catch {
+    // The server save path still handles persistence when browser storage is unavailable.
+  }
+}
+
+function clearStoredMediaUrlOverride(brandIndex, contentIndex) {
+  const period = getActivePeriod();
+  if (!period?.id) return;
+
+  const overrides = readStoredMediaUrls();
+  if (!overrides[period.id]?.[brandIndex]?.[contentIndex]) return;
+
+  delete overrides[period.id][brandIndex][contentIndex];
+
+  if (!Object.keys(overrides[period.id][brandIndex]).length) {
+    delete overrides[period.id][brandIndex];
+  }
+  if (!Object.keys(overrides[period.id]).length) {
+    delete overrides[period.id];
+  }
+
+  try {
+    authStorage.setItem(mediaStorageKey, JSON.stringify(overrides));
+  } catch {
+    // Nothing else to do; stale fallback data is preferable to losing an unsaved URL.
+  }
+}
+
+function applyStoredMediaUrls() {
+  const overrides = readStoredMediaUrls();
+  if (!state.data?.periods?.length) return;
+
+  state.data.periods.forEach((period) => {
+    const periodOverrides = overrides[period.id];
+    if (!periodOverrides) return;
+
+    getBrands(period).forEach((brand, brandIndex) => {
+      const brandOverrides = periodOverrides[brandIndex];
+      if (!brandOverrides) return;
+
+      const bestContent = ensureBestContent(brand);
+      Object.entries(brandOverrides).forEach(([contentIndex, values]) => {
+        const item = bestContent[Number(contentIndex)];
+        if (!item || !values) return;
+
+        if (Object.prototype.hasOwnProperty.call(values, "imageUrl")) {
+          item.imageUrl = values.imageUrl;
+        }
+        if (Object.prototype.hasOwnProperty.call(values, "videoUrl")) {
+          item.videoUrl = values.videoUrl;
+        }
+      });
+    });
+  });
+}
+
+function readStoredMediaUrls() {
+  try {
+    const stored = JSON.parse(authStorage.getItem(mediaStorageKey) || "{}");
+    return stored && typeof stored === "object" ? stored : {};
+  } catch {
+    authStorage.removeItem(mediaStorageKey);
+    return {};
+  }
 }
 
 function updateBestContentMedia(brandIndex, contentIndex, item) {
@@ -923,9 +1009,10 @@ function scheduleReportSave(brandIndex, contentIndex) {
   state.saveTimer = window.setTimeout(async () => {
     try {
       await saveReportData();
+      clearStoredMediaUrlOverride(brandIndex, contentIndex);
       showSaveStatus(brandIndex, contentIndex, "Saved");
     } catch {
-      showSaveStatus(brandIndex, contentIndex, "Preview updated only");
+      showSaveStatus(brandIndex, contentIndex, "Saved locally");
     }
   }, 550);
 }
