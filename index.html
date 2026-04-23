@@ -9,8 +9,24 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js" defer></script>
     <script type="module" src="./main.js"></script>
   </head>
-  <body>
-    <div class="report-shell">
+  <body class="is-locked">
+    <section id="authGate" class="auth-gate" aria-labelledby="authTitle">
+      <div class="auth-gate__panel">
+        <p class="eyebrow">Protected report</p>
+        <h1 id="authTitle">Automoto Report</h1>
+        <p class="auth-gate__copy">Vnesi geslo za dostop do porocila.</p>
+        <form id="authForm" class="auth-form">
+          <label for="passwordInput">Geslo</label>
+          <div class="auth-form__row">
+            <input id="passwordInput" type="password" autocomplete="current-password" required />
+            <button type="submit">Vstop</button>
+          </div>
+          <p id="authError" class="auth-form__error" role="alert"></p>
+        </form>
+      </div>
+    </section>
+
+    <div class="report-shell" id="reportShell" aria-hidden="true">
       <header class="report-header">
         <div class="hero__visual" aria-hidden="true">
           <div class="track"></div>
@@ -37,11 +53,13 @@
         <nav class="topbar" aria-label="Report controls">
           <strong>Automoto Report</strong>
           <div class="topbar__actions">
+            <span id="accessBadge" class="access-badge"></span>
             <label class="file-button">
               <input id="fileInput" type="file" accept=".csv,.xls,.xlsx" />
               Uvozi CSV/XLS
             </label>
             <select id="periodSelect" aria-label="Izberi obdobje"></select>
+            <button id="logoutButton" class="logout-button" type="button">Odjava</button>
           </div>
         </nav>
         <div class="title-block">

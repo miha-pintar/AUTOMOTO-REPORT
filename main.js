@@ -1,4 +1,11 @@
 const dataUrl = "./data/report-data.json";
+const authStorageKey = "automoto-report-auth";
+const authStorage = window.localStorage;
+const saveStatusDuration = 2400;
+const defaultPasswords = {
+  admin: "Epi123!",
+  viewer: "GAreport997!"
+};
 
 const formatNumber = new Intl.NumberFormat("sl-SI", {
   maximumFractionDigits: 1
@@ -8,18 +15,29 @@ const themeColors = ["#58b87a", "#ffc857", "#eaa0a0"];
 
 const state = {
   data: null,
+  auth: null,
   activePeriodId: null,
   activeTab: "overview",
   typeChart: null,
   heroMiniChart: null,
   brandFormatChart: null,
   brandThemeChart: null,
-  competitorChart: null
+  competitorChart: null,
+  saveTimer: null,
+  saveStatusTimer: null
 };
 
 let currentTabRoutes = new Map();
 
 const nodes = {
+  body: document.body,
+  authGate: document.querySelector("#authGate"),
+  authForm: document.querySelector("#authForm"),
+  passwordInput: document.querySelector("#passwordInput"),
+  authError: document.querySelector("#authError"),
+  reportShell: document.querySelector("#reportShell"),
+  accessBadge: document.querySelector("#accessBadge"),
+  logoutButton: document.querySelector("#logoutButton"),
   periodSelect: document.querySelector("#periodSelect"),
   fileInput: document.querySelector("#fileInput"),
   reportTabs: document.querySelector("#reportTabs"),
@@ -46,9 +64,10 @@ const nodes = {
 init();
 
 async function init() {
-  const response = await fetch(dataUrl);
-  state.data = await response.json();
-  state.activePeriodId = state.data.activePeriodId || state.data.periods[0]?.id;
+  nodes.authForm.addEventListener("submit", handleLogin);
+  nodes.logoutButton.addEventListener("click", handleLogout);
+  restoreStoredAuth();
+  await restoreServerAuth();
 
   nodes.periodSelect.addEventListener("change", (event) => {
     state.activePeriodId = event.target.value;
@@ -59,6 +78,7 @@ async function init() {
 
   nodes.fileInput.addEventListener("change", handleFileImport);
   nodes.reportTabs.addEventListener("click", handleTabClick);
+  nodes.brandPanel.addEventListener("input", handleBestContentInput);
   window.addEventListener("popstate", () => {
     applyTabFromPath();
     render();
@@ -69,11 +89,183 @@ async function init() {
   });
   renderHeroMiniChart();
 
-  render();
+  if (state.auth) {
+    try {
+      await loadReport();
+      unlockReport();
+      render();
+    } catch {
+      clearStoredAuth();
+      state.auth = null;
+      lockReport();
+    }
+    return;
+  }
+
+  lockReport();
 }
 
 function getActivePeriod() {
   return state.data.periods.find((period) => period.id === state.activePeriodId) || state.data.periods[0];
+}
+
+async function loadReport() {
+  if (state.data) return;
+
+  const response = await fetch(dataUrl);
+  if (!response.ok) {
+    throw new Error("Report data could not be loaded.");
+  }
+
+  state.data = await response.json();
+  state.activePeriodId = state.data.activePeriodId || state.data.periods[0]?.id;
+}
+
+function restoreStoredAuth() {
+  try {
+    const storedAuth = JSON.parse(authStorage.getItem(authStorageKey) || "null");
+    if (storedAuth?.role === "admin" || storedAuth?.role === "viewer") {
+      state.auth = storedAuth;
+    }
+  } catch {
+    clearStoredAuth();
+  }
+}
+
+async function restoreServerAuth() {
+  try {
+    const response = await fetch("./api/session");
+    if (!response.ok) return;
+
+    const auth = await response.json();
+    if (auth?.role === "admin" || auth?.role === "viewer") {
+      setAuth(auth);
+    }
+  } catch {
+    // Static hosting fallback uses browser storage-based access.
+  }
+}
+
+async function handleLogin(event) {
+  event.preventDefault();
+  const password = nodes.passwordInput.value;
+  clearAuthError();
+
+  try {
+    const auth = await loginWithServer(password);
+    if (!auth) {
+      showAuthError("Napačno geslo.");
+      return;
+    }
+    setAuth(auth);
+  } catch {
+    const role = roleForPassword(password);
+    if (!role) {
+      showAuthError("Napačno geslo.");
+      return;
+    }
+    setAuth({ role });
+  }
+
+  nodes.passwordInput.value = "";
+
+  try {
+    await loadReport();
+    unlockReport();
+    render();
+  } catch {
+    showAuthError("Poročila ni bilo mogoče naložiti.");
+    state.auth = null;
+    clearStoredAuth();
+    lockReport();
+  }
+}
+
+async function loginWithServer(password) {
+  const response = await fetch("./api/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ password })
+  });
+
+  if (response.status === 401) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error("Server login failed.");
+  }
+
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    throw new Error("Server login unavailable.");
+  }
+
+  return response.json();
+}
+
+function roleForPassword(password) {
+  if (password === defaultPasswords.admin) return "admin";
+  if (password === defaultPasswords.viewer) return "viewer";
+  return null;
+}
+
+function setAuth(auth) {
+  state.auth = {
+    role: auth.role
+  };
+  authStorage.setItem(authStorageKey, JSON.stringify(state.auth));
+}
+
+async function handleLogout() {
+  state.auth = null;
+  state.data = null;
+  clearStoredAuth();
+
+  try {
+    await fetch("./api/logout", { method: "POST" });
+  } catch {
+    // Static hosting fallback has no logout endpoint.
+  }
+
+  lockReport();
+}
+
+function clearStoredAuth() {
+  authStorage.removeItem(authStorageKey);
+}
+
+function isAdmin() {
+  return state.auth?.role === "admin";
+}
+
+function unlockReport() {
+  nodes.body.classList.remove("is-locked");
+  nodes.body.classList.toggle("is-viewer", !isAdmin());
+  nodes.reportShell.removeAttribute("aria-hidden");
+  nodes.authGate.setAttribute("hidden", "");
+  nodes.accessBadge.textContent = isAdmin() ? "Admin mode" : "View only";
+  nodes.fileInput.disabled = !isAdmin();
+  nodes.fileInput.closest(".file-button")?.classList.toggle("is-hidden", !isAdmin());
+}
+
+function lockReport() {
+  nodes.body.classList.add("is-locked");
+  nodes.body.classList.remove("is-viewer");
+  nodes.reportShell.setAttribute("aria-hidden", "true");
+  nodes.authGate.removeAttribute("hidden");
+  nodes.accessBadge.textContent = "";
+  nodes.fileInput.disabled = true;
+  nodes.fileInput.closest(".file-button")?.classList.add("is-hidden");
+  nodes.passwordInput.focus();
+}
+
+function showAuthError(message) {
+  nodes.authError.textContent = message;
+}
+
+function clearAuthError() {
+  nodes.authError.textContent = "";
 }
 
 function render() {
@@ -161,7 +353,7 @@ function render() {
 }
 
 function getBrands(period) {
-  return period.brands || period.influencers || [];
+  return period.brands || period.creators || [];
 }
 
 function calculateTotals(brands) {
@@ -316,33 +508,27 @@ function renderBrandPanel(brands) {
 
         <article class="brand-report-block">
           <div>
-            <h3>Influencer activity</h3>
-            <p>${escapeHtml(report.influencerActivity.activeInfluencers)} influencers generated content about this brand.</p>
+            <h3>Creator activity</h3>
+            <p>${escapeHtml(report.creatorActivity.activeCreators)} profilov je za to znamko naredilo ${formatNumber.format(
+              toNumber(report.creatorActivity.contentCount)
+            )} vsebin.</p>
           </div>
-          <dl class="influencer-list">
-            <div><dt>Average content</dt><dd>${escapeHtml(report.influencerActivity.averagePosts)} posts</dd></div>
+          <dl class="creator-list">
+            <div><dt>Average content per profile</dt><dd>${escapeHtml(report.creatorActivity.averagePosts)} posts</dd></div>
             <div>
-              <dt>Most active influencer</dt>
+              <dt>Most active creator</dt>
               <dd>
                 ${
-                  report.influencerActivity.mostActive.url
-                    ? `<a href="${escapeHtml(report.influencerActivity.mostActive.url)}" target="_blank" rel="noreferrer">${escapeHtml(
-                        report.influencerActivity.mostActive.name
+                  report.creatorActivity.mostActive.url
+                    ? `<a href="${escapeHtml(report.creatorActivity.mostActive.url)}" target="_blank" rel="noreferrer">${escapeHtml(
+                        report.creatorActivity.mostActive.name
                       )}</a>`
-                    : escapeHtml(report.influencerActivity.mostActive.name)
+                    : escapeHtml(report.creatorActivity.mostActive.name)
                 }
-                <span>${formatNumber.format(toNumber(report.influencerActivity.mostActive.posts))} posts</span>
+                <span>${formatNumber.format(toNumber(report.creatorActivity.mostActive.posts))} posts</span>
               </dd>
             </div>
           </dl>
-        </article>
-
-        <article class="brand-report-block brand-report-block--wide">
-          <div>
-            <h3>Influencer / profile breakdown</h3>
-            <p>Publishing mix and performance by profile for this brand.</p>
-          </div>
-          ${renderInfluencerBreakdownTable(report.influencerBreakdown)}
         </article>
 
         <article class="brand-report-block brand-report-block--wide">
@@ -351,7 +537,7 @@ function renderBrandPanel(brands) {
             <p>Top creative slots by format. Add post-level URLs when source exports include them.</p>
           </div>
           <div class="best-content-grid">
-            ${report.bestContent.map(renderBestContent).join("")}
+            ${report.bestContent.map((item, index) => renderBestContent(item, Number(state.activeTab.split(":")[1]), index)).join("")}
           </div>
         </article>
 
@@ -383,6 +569,14 @@ function renderBrandPanel(brands) {
             <div><span>Comment analysis</span><strong>${formatNumber.format(toNumber(report.community.commentsAnalysed))}</strong></div>
             <div><span>Comment sentiment</span><strong>${escapeHtml(report.community.sentiment)}</strong></div>
           </div>
+        </article>
+
+        <article class="brand-report-block brand-report-block--wide">
+          <div>
+            <h3>Creator / profile breakdown</h3>
+            <p>Publishing mix and performance by profile for this brand.</p>
+          </div>
+          ${renderCreatorBreakdownTable(report.creatorBreakdown)}
         </article>
       </div>
     </section>
@@ -427,16 +621,17 @@ function buildBrandReport(brand, metrics) {
         { metric: "Engagement", total: metrics.totalEngagement, average: averagePerPost(metrics.totalEngagement, posts) },
         { metric: "Engagement rate", total: engagementRate(brand), average: engagementRate(brand), suffix: "%" }
       ],
-    influencerActivity: {
-      activeInfluencers: report.influencerActivity?.activeInfluencers || "Source needed",
-      averagePosts: report.influencerActivity?.averagePosts || "Source needed",
-      mostActive: report.influencerActivity?.mostActive || {
+    creatorActivity: {
+      activeCreators: report.creatorActivity?.activeCreators || "Source needed",
+      contentCount: report.creatorActivity?.contentCount || brand.posts || 0,
+      averagePosts: report.creatorActivity?.averagePosts || "Source needed",
+      mostActive: report.creatorActivity?.mostActive || {
         name: "Source needed",
         posts: 0,
         url: ""
       }
     },
-    influencerBreakdown: buildInfluencerBreakdown(report),
+    creatorBreakdown: buildCreatorBreakdown(report),
     bestContent: report.bestContent || [
       { label: "Best performing video", creator: "Source needed", primaryMetric: "-", secondaryMetric: "-", mediaType: "Video" },
       { label: "Best performing photo", creator: "Source needed", primaryMetric: "-", secondaryMetric: "-", mediaType: "Photo" }
@@ -484,19 +679,19 @@ function renderFormatTable(formats) {
   `;
 }
 
-function buildInfluencerBreakdown(report) {
-  const rows = report.influencerBreakdown || report.influencers || report.profiles;
+function buildCreatorBreakdown(report) {
+  const rows = report.creatorBreakdown || report.creators || report.profiles;
   if (Array.isArray(rows) && rows.length) return rows;
   return [];
 }
 
-function renderInfluencerBreakdownTable(rows) {
+function renderCreatorBreakdownTable(rows) {
   return `
     <div class="profile-table">
       <table>
         <thead>
           <tr>
-            <th>Influencer / profile</th>
+            <th>Creator / profile</th>
             <th>Total posts</th>
             <th>Reels</th>
             <th>Stories</th>
@@ -511,7 +706,7 @@ function renderInfluencerBreakdownTable(rows) {
         <tbody>
           ${
             rows.length
-              ? rows.map(renderInfluencerBreakdownRow).join("")
+              ? rows.map(renderCreatorBreakdownRow).join("")
               : `<tr><td class="profile-table__empty" colspan="10">Profile-level source data is needed for this brand.</td></tr>`
           }
         </tbody>
@@ -520,7 +715,7 @@ function renderInfluencerBreakdownTable(rows) {
   `;
 }
 
-function renderInfluencerBreakdownRow(row) {
+function renderCreatorBreakdownRow(row) {
   const engagement =
     row.engagement ??
     (hasMetricValue(row.likes) || hasMetricValue(row.comments) ? toNumber(row.likes) + toNumber(row.comments) : null);
@@ -567,11 +762,17 @@ function renderPerformanceTable(rows) {
   `;
 }
 
-function renderBestContent(item) {
+function renderBestContent(item, brandIndex, contentIndex) {
+  const videoUrl = item.videoUrl || item.video || "";
+  const imageUrl = item.imageUrl || item.image || "";
+  const mediaLabel = item.mediaType || "Post";
+  const mediaClass = imageUrl || videoUrl ? " content-card__media--image" : "";
+
   return `
-    <div class="content-card">
-      <div class="content-card__media">
-        <span>${escapeHtml(item.mediaType || "Post")}</span>
+    <div class="content-card" data-brand-index="${escapeHtml(brandIndex)}" data-content-index="${escapeHtml(contentIndex)}">
+      <div class="content-card__media${mediaClass}">
+        ${renderBestContentMedia(item)}
+        <span>${escapeHtml(mediaLabel)}</span>
       </div>
       <div>
         <h4>${escapeHtml(item.label)}</h4>
@@ -580,9 +781,178 @@ function renderBestContent(item) {
           <div><dt>Primary</dt><dd>${escapeHtml(item.primaryMetric)}</dd></div>
           <div><dt>Secondary</dt><dd>${escapeHtml(item.secondaryMetric)}</dd></div>
         </dl>
+        ${isAdmin() ? renderBestContentEditor(item, brandIndex, contentIndex) : ""}
       </div>
     </div>
   `;
+}
+
+function renderBestContentEditor(item, brandIndex, contentIndex) {
+  return `
+    <div class="content-card__editor" aria-label="Media URLs">
+      <label>
+        Image URL
+        <input
+          type="url"
+          inputmode="url"
+          placeholder="https://.../image.jpg"
+          value="${escapeHtml(item.imageUrl || item.image || "")}"
+          data-media-field="imageUrl"
+          data-brand-index="${escapeHtml(brandIndex)}"
+          data-content-index="${escapeHtml(contentIndex)}"
+        />
+      </label>
+      <label>
+        Video URL
+        <input
+          type="url"
+          inputmode="url"
+          placeholder="https://.../video.mp4"
+          value="${escapeHtml(item.videoUrl || item.video || "")}"
+          data-media-field="videoUrl"
+          data-brand-index="${escapeHtml(brandIndex)}"
+          data-content-index="${escapeHtml(contentIndex)}"
+        />
+      </label>
+      <span class="content-card__save" data-save-status="${escapeHtml(brandIndex)}-${escapeHtml(contentIndex)}"></span>
+    </div>
+  `;
+}
+
+function handleBestContentInput(event) {
+  const input = event.target.closest("[data-media-field]");
+  if (!input || !isAdmin()) return;
+
+  const brandIndex = Number(input.dataset.brandIndex);
+  const contentIndex = Number(input.dataset.contentIndex);
+  const field = input.dataset.mediaField;
+  const item = getEditableBestContentItem(brandIndex, contentIndex);
+  if (!item || (field !== "imageUrl" && field !== "videoUrl")) return;
+
+  item[field] = input.value.trim();
+  updateBestContentMedia(brandIndex, contentIndex, item);
+  showSaveStatus(brandIndex, contentIndex, "Saving...");
+  scheduleReportSave(brandIndex, contentIndex);
+}
+
+function getEditableBestContentItem(brandIndex, contentIndex) {
+  const period = getActivePeriod();
+  const brand = getBrands(period)[brandIndex];
+  if (!brand) return null;
+
+  brand.report = brand.report || {};
+  if (!Array.isArray(brand.report.bestContent)) {
+    const totalEngagement = toNumber(brand.likes) + toNumber(brand.comments);
+    const videoPosts = toNumber(brand.videoPosts || brand.reels);
+    const photoPosts = toNumber(brand.photoPosts || brand.staticPosts || brand.posts);
+    brand.report.bestContent = buildBrandReport(brand, { totalEngagement, videoPosts, photoPosts }).bestContent;
+  }
+
+  return brand.report.bestContent[contentIndex] || null;
+}
+
+function updateBestContentMedia(brandIndex, contentIndex, item) {
+  const card = nodes.brandPanel.querySelector(
+    `.content-card[data-brand-index="${CSS.escape(String(brandIndex))}"][data-content-index="${CSS.escape(String(contentIndex))}"]`
+  );
+  const media = card?.querySelector(".content-card__media");
+  if (!media) return;
+
+  const videoUrl = item.videoUrl || item.video || "";
+  const imageUrl = item.imageUrl || item.image || "";
+  const mediaLabel = item.mediaType || "Post";
+
+  media.classList.toggle("content-card__media--image", Boolean(imageUrl || videoUrl));
+  media.innerHTML = `
+    ${renderBestContentMedia(item)}
+    <span>${escapeHtml(mediaLabel)}</span>
+  `;
+}
+
+function renderBestContentMedia(item) {
+  const videoUrl = item.videoUrl || item.video || "";
+  const imageUrl = item.imageUrl || item.image || "";
+  const mediaLabel = item.mediaType || "Post";
+
+  if (videoUrl) {
+    const embedUrl = videoEmbedUrl(videoUrl);
+    if (embedUrl) {
+      return `<iframe src="${escapeHtml(embedUrl)}" title="${escapeHtml(`${item.label || mediaLabel} video`)}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>`;
+    }
+
+    return `<video src="${escapeHtml(videoUrl)}" controls muted playsinline preload="metadata"></video>`;
+  }
+
+  if (imageUrl) {
+    return `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(`${item.label || mediaLabel} by ${item.creator || "creator"}`)}" loading="lazy" />`;
+  }
+
+  return "";
+}
+
+function videoEmbedUrl(value) {
+  try {
+    const url = new URL(value);
+    const host = url.hostname.replace(/^www\./, "");
+
+    if (host === "youtu.be") {
+      const id = url.pathname.split("/").filter(Boolean)[0];
+      return id ? `https://www.youtube.com/embed/${encodeURIComponent(id)}` : "";
+    }
+
+    if (host === "youtube.com" || host === "m.youtube.com") {
+      const watchId = url.searchParams.get("v");
+      const pathParts = url.pathname.split("/").filter(Boolean);
+      const id = watchId || (["shorts", "embed"].includes(pathParts[0]) ? pathParts[1] : "");
+      return id ? `https://www.youtube.com/embed/${encodeURIComponent(id)}` : "";
+    }
+
+    if (host === "vimeo.com" || host === "player.vimeo.com") {
+      const id = url.pathname.split("/").filter(Boolean).pop();
+      return id ? `https://player.vimeo.com/video/${encodeURIComponent(id)}` : "";
+    }
+  } catch {
+    return "";
+  }
+
+  return "";
+}
+
+function scheduleReportSave(brandIndex, contentIndex) {
+  window.clearTimeout(state.saveTimer);
+  state.saveTimer = window.setTimeout(async () => {
+    try {
+      await saveReportData();
+      showSaveStatus(brandIndex, contentIndex, "Saved");
+    } catch {
+      showSaveStatus(brandIndex, contentIndex, "Preview updated only");
+    }
+  }, 550);
+}
+
+async function saveReportData() {
+  const response = await fetch("./api/report-data", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(state.data)
+  });
+
+  if (!response.ok) {
+    throw new Error("Report save failed.");
+  }
+}
+
+function showSaveStatus(brandIndex, contentIndex, message) {
+  const status = nodes.brandPanel.querySelector(`[data-save-status="${CSS.escape(`${brandIndex}-${contentIndex}`)}"]`);
+  if (!status) return;
+
+  status.textContent = message;
+  window.clearTimeout(state.saveStatusTimer);
+  if (message === "Saving...") return;
+
+  state.saveStatusTimer = window.setTimeout(() => {
+    status.textContent = "";
+  }, saveStatusDuration);
 }
 
 function renderModelTable(models) {
@@ -1029,6 +1399,11 @@ function renderRow(item) {
 }
 
 async function handleFileImport(event) {
+  if (!isAdmin()) {
+    event.target.value = "";
+    return;
+  }
+
   const file = event.target.files?.[0];
   if (!file) return;
 

@@ -22,7 +22,7 @@
           "comments": 1900,
           "report": {
             "contentPreviewUrl": "https://be.epidemic.co/campaigns/36713?share=ngUFb6Qx2yYzoHxxD66f5t",
-            "summary": "During the observed period, the brand collaborated with active influencers and generated strong visibility mainly through short formats. Content output was led by Stories and Reels, with measurable audience response across promoted models.",
+            "summary": "During the observed period, the brand collaborated with active creators and generated strong visibility mainly through short formats. Content output was led by Stories and Reels, with measurable audience response across promoted models.",
             "formats": [
               { "type": "Reels", "posts": 3, "share": 30 },
               { "type": "Stories", "posts": 7, "share": 70 },
@@ -35,8 +35,9 @@
               { "metric": "Engagement", "total": 384, "average": 42 },
               { "metric": "Engagement rate", "total": 3.3, "average": 1.1, "suffix": "%" }
             ],
-            "influencerActivity": {
-              "activeInfluencers": 8,
+            "creatorActivity": {
+              "activeCreators": 8,
+              "contentCount": 18,
               "averagePosts": 5,
               "mostActive": {
                 "name": "@ula_p_v",

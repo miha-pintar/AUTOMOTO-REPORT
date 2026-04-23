@@ -1,6 +1,6 @@
 # Automoto Report
 
-Interaktivni one pager za pregled Instagram influencer aktivnosti po obdobjih.
+Interaktivni one pager za pregled Instagram creator aktivnosti po obdobjih.
 
 ## Lokalni zagon
 
@@ -17,6 +17,31 @@ http://localhost:5173
 ```
 
 Projekt ne potrebuje `npm install`, ker lokalni server uporablja samo Node.js.
+
+## Dostop z geslom
+
+Privzeti gesli sta:
+
+- admin dostop: `Epi123!`
+- view-only dostop: `GAreport997!`
+
+Admin uporabnik vidi uvoz CSV/XLS in lahko podatke ureja v browser preview nacinu. View-only uporabniku je uvoz skrit in porocilo uporablja samo za pregled.
+
+Ko uporabnik enkrat vnese pravilno geslo, si brskalnik na tej napravi zapomni dostop. Ponoven vnos gesla ni potreben do odjave, brisanja browser podatkov ali poteka seje.
+
+Pri `npm run dev` lokalni server zasciti podatke in assete s podpisano sejno prijavo. Gesli lahko preglasuješ z environment spremenljivkama:
+
+```bash
+ADMIN_PASSWORD="novo-admin-geslo" VIEWER_PASSWORD="novo-uporabnisko-geslo" npm run dev
+```
+
+Privzeto je naprava prijavljena 180 dni. Trajanje lahko spremeniš z `SESSION_DAYS`:
+
+```bash
+SESSION_DAYS=30 npm run dev
+```
+
+Na static hostingu, kot je GitHub Pages, prijava deluje samo kot client-side zaklep. Za pravo zascito podatkov uporabi Node server ali hosting, ki podpira backend avtentikacijo.
 
 ## GitHub Pages
 
@@ -56,7 +81,56 @@ Osnovna struktura:
 
 - `activePeriodId`: katero obdobje je privzeto odprto
 - `periods`: seznam obdobij
-- `influencers`: vrstice influencerjev za izbrano obdobje
+- `creators`: vrstice creatorjev za izbrano obdobje
+
+### Dodajanje slik za best performing content
+
+Admin uporabnik lahko URL slike ali videa vnese neposredno v polji pri kartici `Best performing content`. Preview se posodobi takoj, lokalni Node server pa spremembo shrani v `data/report-data.json`.
+
+Rocni postopek:
+
+1. Slike shrani v mapo:
+
+```text
+assets/content/
+```
+
+2. Uporabi kratka in stabilna imena datotek, brez presledkov, na primer:
+
+```text
+best-performing-reel.jpg
+best-performing-story.jpg
+```
+
+3. V `data/report-data.json` pri posameznem elementu `bestContent` dodaj `imageUrl`:
+
+```json
+{
+  "label": "Best performing reel",
+  "creator": "@ula_p_v",
+  "primaryMetric": "297",
+  "secondaryMetric": "19.7k",
+  "mediaType": "Reel",
+  "imageUrl": "./assets/content/best-performing-reel.jpg"
+}
+```
+
+Ce `imageUrl` ni dodan, aplikacija prikaze placeholder.
+
+Za video uporabi `videoUrl`:
+
+```json
+{
+  "label": "Best performing story",
+  "creator": "@ula_p_v",
+  "primaryMetric": "19.7k",
+  "secondaryMetric": "Stories",
+  "mediaType": "Story",
+  "videoUrl": "https://example.com/story-video.mp4"
+}
+```
+
+Podprti so direktni video URL-ji, na primer `.mp4`, `.webm` in `.mov`, ter YouTube/Vimeo linki, kadar ponudnik dovoli embed.
 
 ## Uvoz CSV/XLS
 
