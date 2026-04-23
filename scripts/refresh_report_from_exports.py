@@ -47,7 +47,6 @@ POSITIVE_WORDS = [
     "bravo",
     "lep",
     "lepa",
-    "najbol",
     "všeč",
     "hud",
     "hudo",
@@ -136,6 +135,25 @@ STRONG_NEGATIVE_PATTERNS = [
     (r"\bdebilno\b", 6),
     (r"\boslepijo\b|\bzaslepi\b", 4),
     (r"\bza časom\b|\bza casom\b", 3),
+    (r"\bkatastrofa\b", 4),
+    (r"\bpremajhna baterija\b", 3),
+    (r"\bsramot", 3),
+    (r"\bslabo\b|\bnevarno\b", 3),
+    (r"\bnesreč|\bnesrec", 3),
+    (r"\bzvočno onesnaženje\b|\bzvocno onesnazenje\b", 4),
+    (r"\bni se znižal\b|\bni se znizal\b|\bprav nič\b|\bprav nic\b", 3),
+    (r"\bpreteklost\b", 2),
+    (r"\bkdo kupi rabljenega\b", 4),
+    (r"\bboljše\b.*\bdelo\b|\bboljse\b.*\bdelo\b", 3),
+    (r"\bje bolš\b|\bje boljs\b|\bje boljši\b|\bje boljsi\b", 4),
+    (r"\bboljši\b|\bboljsi\b", 2),
+    (r"\bbul(se|š)e\b|\bbolse\b", 2),
+    (r"\bmineštri\b|\bminestri\b", 2),
+    (r"\bcrkval\b|\bcrkali\b", 3),
+    (r"\bnajdražja možna opcija\b|\bnajdrazja mozna opcija\b", 4),
+    (r"\busmrti\b|\braznese\b", 5),
+    (r"\bna žalost\b|\bna zalost\b", 2),
+    (r"\bstarotehnolog", 3),
 ]
 
 NEGATIVE_OVERRIDE_PATTERNS = [
@@ -178,6 +196,7 @@ CONSTRUCTIVE_PATTERNS = [
     r"\bmotorje\b",
     r"\bpogon\b",
     r"\bporaba\b",
+    r"\breview\b",
 ]
 
 AMBIGUOUS_PATTERNS = [
@@ -199,7 +218,7 @@ FEATURE_TERMS = [
     "žaromet",
     "zaromet",
     "ekran",
-    "poraba",
+    "porab",
     "trasa",
     "pogon",
     "motor",
@@ -210,7 +229,33 @@ FEATURE_TERMS = [
     "tlacne posode",
     "vlečne sile",
     "vlecne sile",
+    "barv",
+    "značk",
+    "znack",
 ]
+
+CONTENT_TERMS = [
+    "video",
+    "review",
+    "objavite",
+    "stalnica",
+]
+
+GENERIC_REACTIONS = {
+    "super",
+    "super video",
+    "🔥",
+    "🔥🔥",
+    "🔥🔥🔥",
+    "😍",
+    "😍🔥",
+    "❤️",
+    "❤️❤️❤️",
+    "👏",
+    "👏👏👏",
+    "🙌",
+    "🤩",
+}
 
 
 def norm(value):
@@ -674,6 +719,10 @@ def has_pattern(text, patterns):
     return any(re.search(pattern, text, flags=re.IGNORECASE) for pattern in patterns)
 
 
+def has_weighted_pattern(text, patterns):
+    return any(re.search(pattern, text, flags=re.IGNORECASE) for pattern, _weight in patterns)
+
+
 def sentiment_for_comment(text):
     lower = text.lower().strip()
     if not lower:
@@ -707,6 +756,9 @@ def sentiment_for_comment(text):
     if has_negative_override and negative >= positive:
         return "negative"
 
+    if is_question and negative >= 2:
+        return "negative"
+
     if negative >= positive + 2:
         return "negative"
 
@@ -729,6 +781,14 @@ def sentiment_for_comment(text):
     return "neutral"
 
 
+def contextual_sentiment_for_comment(text, allowed_brands):
+    lower = text.lower().strip()
+    allowed = {brand.lower() for brand in allowed_brands}
+    if "toyota" in allowed and re.search(r"\b(hdi|tdi)\b.*\bzmaga\b|\bzmaga\b.*\b(hdi|tdi)\b", lower, flags=re.IGNORECASE):
+        return "negative"
+    return sentiment_for_comment(text)
+
+
 def comment_target(text, model_terms, allowed_brands):
     lower = text.lower()
     allowed = [brand.lower() for brand in allowed_brands]
@@ -744,18 +804,64 @@ def comment_target(text, model_terms, allowed_brands):
         return "Design / appearance"
     if any(term in lower for term in FEATURE_TERMS):
         return "Vehicle feature / usage"
+    if any(term in lower for term in CONTENT_TERMS):
+        return "Campaign content / format"
     vehicle_terms = ["avto", "vozilo", "model", "motor", "notranjost", "oblika", "cena", "test"]
     if any(term in lower for term in vehicle_terms):
         return "Vehicle / model"
     return ""
 
 
+def is_generic_reaction(comment):
+    compact_comment = " ".join(comment.lower().split())
+    if compact_comment in GENERIC_REACTIONS:
+        return True
+    if len(compact_comment) <= 8 and re.fullmatch(r"[\W_0-9]+", compact_comment):
+        return True
+    return False
+
+
+def example_score(comment, target):
+    score = 0
+    lower = comment.lower()
+    score += min(len(comment.strip()), 160)
+    if target and target not in {"Vehicle / model", "Vehicle feature / usage"}:
+        score += 25
+    if any(ch in comment for ch in "?!"):
+        score += 5
+    if has_pattern(lower, CONSTRUCTIVE_PATTERNS):
+        score += 10
+    if has_weighted_pattern(lower, STRONG_POSITIVE_PATTERNS) or has_weighted_pattern(lower, STRONG_NEGATIVE_PATTERNS):
+        score += 15
+    if is_generic_reaction(comment):
+        score -= 80
+    if lower.startswith("@"):
+        score -= 20
+    return score
+
+
+def example_target(comment, model_terms, allowed_brands):
+    target = comment_target(comment, model_terms, allowed_brands)
+    return target or "Vehicle / model"
+
+
 def is_meaningful_opinion(comment, model_terms, allowed_brands):
     if len(comment.strip()) < 12:
         return False
-    if not comment_target(comment, model_terms, allowed_brands):
+    target = comment_target(comment, model_terms, allowed_brands)
+    if is_generic_reaction(comment):
         return False
     lower = comment.lower()
+    if target:
+        has_target = True
+    else:
+        has_target = (
+            has_weighted_pattern(lower, STRONG_POSITIVE_PATTERNS)
+            or has_weighted_pattern(lower, STRONG_NEGATIVE_PATTERNS)
+            or any(term in lower for term in ["avti", "avto", "motor", "pogon", "barva", "znack", "značk", "elektrika"])
+        )
+    if not has_target:
+        return False
     opinion_terms = [
         *POSITIVE_WORDS,
         *NEGATIVE_WORDS,
@@ -775,6 +881,16 @@ def is_meaningful_opinion(comment, model_terms, allowed_brands):
         "luci",
         "vlečne",
         "vlecne",
+        "video",
+        "review",
+        "barva",
+        "elektrika",
+        "presene",
+        "stalnica",
+        "objavit",
+        "podatk",
+        "vreme",
+        "fajn",
     ]
     return any(term in lower for term in opinion_terms)
 
@@ -790,10 +906,110 @@ def comment_text(row):
     return max(values, key=len)
 
 
+def normalize_comment_key(comment):
+    return " ".join(norm(comment).lower().split())
+
+
+def model_mentions_by_brand(text, model_terms):
+    lower = normalize_comment_key(text)
+    mentions = set()
+    for model, term in model_terms:
+        pattern = r"(?<![\w])" + re.escape(term).replace(r"\ ", r"[\s#_-]+") + r"(?![\w])"
+        if re.search(pattern, lower, flags=re.IGNORECASE):
+            mentions.add(model)
+    return mentions
+
+
+def is_constructive_comment(comment, model_terms, allowed_brands):
+    lower = normalize_comment_key(comment)
+    if not lower or is_generic_reaction(comment):
+        return False
+    allowed = {brand.lower() for brand in allowed_brands}
+    mentioned_models = model_mentions_by_brand(comment, model_terms)
+    allowed_model_mentioned = any(
+        any(model.lower().startswith(brand) or model.lower() == brand for brand in allowed)
+        for model in mentioned_models
+    )
+    other_model_mentioned = bool(mentioned_models) and not allowed_model_mentioned
+    allowed_brand_mentioned = any(brand in lower for brand in allowed)
+    if other_model_mentioned and not allowed_brand_mentioned and not allowed_model_mentioned:
+        return False
+    if has_pattern(lower, CONSTRUCTIVE_PATTERNS):
+        return True
+    if "?" in comment and any(
+        term in lower
+        for term in [
+            "porab",
+            "trasa",
+            "motor",
+            "pogon",
+            "hibrid",
+            "ekran",
+            "luči",
+            "luci",
+            "vlečne",
+            "vlecne",
+            "pregled",
+            "naročnin",
+            "narocnin",
+            "opcij",
+            "prednost",
+            "koliko",
+            "zakaj",
+            "ali",
+            "zdrž",
+            "zdrz",
+            "review",
+        ]
+    ):
+        return True
+    return False
+
+
+def collect_example_items(comments, model_terms, allowed_brands, sentiment):
+    items = [
+        {
+            "text": comment,
+            "target": example_target(comment, model_terms, allowed_brands),
+        }
+        for comment in comments
+        if contextual_sentiment_for_comment(comment, allowed_brands) == sentiment
+        and is_meaningful_opinion(comment, model_terms, allowed_brands)
+    ]
+    return sorted(items, key=lambda item: example_score(item["text"], item["target"]), reverse=True)
+
+
+def collect_constructive_items(comments, model_terms, allowed_brands):
+    items = [
+        {
+            "text": comment,
+            "target": example_target(comment, model_terms, allowed_brands),
+        }
+        for comment in comments
+        if is_constructive_comment(comment, model_terms, allowed_brands)
+    ]
+    return sorted(items, key=lambda item: example_score(item["text"], item["target"]), reverse=True)
+
+
+def filter_unique_examples(items, shared_comment_keys, limit=5):
+    unique_items = []
+    seen = set()
+    for item in items:
+        key = normalize_comment_key(item["text"])
+        if not key or key in shared_comment_keys or key in seen:
+            continue
+        unique_items.append(item)
+        seen.add(key)
+        if len(unique_items) >= limit:
+            break
+    return unique_items
+
+
 def build_comment_report(rows, model_terms, allowed_brands):
     comments = [comment_text(row) for row in rows]
     comments = [comment for comment in comments if comment and not comment.isdigit()]
-    counts = Counter(sentiment_for_comment(comment) for comment in comments)
+    comments = [comment for comment in comments if not re.fullmatch(r"[\d\s.E+-]+", comment)]
+    counts = Counter(contextual_sentiment_for_comment(comment, allowed_brands) for comment in comments)
     total = sum(counts.values())
     if not total:
         return {"commentsAnalysed": 0, "sentiment": "", "sentimentNote": "sentimenta ni mogoče razbrati"}
@@ -806,22 +1022,9 @@ def build_comment_report(rows, model_terms, allowed_brands):
     else:
         overall = "neutral"
 
-    positives = [
-        {
-            "text": comment,
-            "target": comment_target(comment, model_terms, allowed_brands),
-        }
-        for comment in comments
-        if sentiment_for_comment(comment) == "positive" and is_meaningful_opinion(comment, model_terms, allowed_brands)
-    ][:5]
-    negatives = [
-        {
-            "text": comment,
-            "target": comment_target(comment, model_terms, allowed_brands),
-        }
-        for comment in comments
-        if sentiment_for_comment(comment) == "negative" and is_meaningful_opinion(comment, model_terms, allowed_brands)
-    ][:5]
+    positives = collect_example_items(comments, model_terms, allowed_brands, "positive")[:5]
+    negatives = collect_example_items(comments, model_terms, allowed_brands, "negative")[:5]
+    constructive = collect_constructive_items(comments, model_terms, allowed_brands)[:5]
     insight = (
         f"Analysed comments are mostly {overall}. "
         f"Positive cues account for {round(positive_share * 100)}% of detected sentiment and negative cues for {round(negative_share * 100)}%."
@@ -832,6 +1035,7 @@ def build_comment_report(rows, model_terms, allowed_brands):
         "sentimentSummary": insight,
         "positiveExamples": positives,
         "negativeExamples": negatives,
+        "constructiveExamples": constructive,
     }
 
 
@@ -847,6 +1051,8 @@ def refresh(report_path, models_path, posts_dir, comments_dir):
     summaries = []
     duplicate_summary = {}
     period_dates = []
+    brand_comment_reports = {}
+    comment_brand_index = defaultdict(set)
     for brand in period["brands"]:
         if brand["name"] not in POST_FILES:
             continue
@@ -874,8 +1080,27 @@ def refresh(report_path, models_path, posts_dir, comments_dir):
         comment_rows = []
         for file_name in COMMENT_FILES.get(brand["name"], []):
             comment_rows.extend(read_xlsx(comments_dir / file_name))
-        report["community"] = build_comment_report(comment_rows, model_terms, allowed_brands)
+        community = build_comment_report(comment_rows, model_terms, allowed_brands)
+        report["community"] = community
+        brand_comment_reports[brand["name"]] = {
+            "community": community,
+            "allowedBrands": allowed_brands,
+        }
+        for row in comment_rows:
+            comment = comment_text(row)
+            if not comment or comment.isdigit() or re.fullmatch(r"[\d\s.E+-]+", comment):
+                continue
+            comment_brand_index[normalize_comment_key(comment)].add(brand["name"])
         summaries.append((brand["name"], brand["posts"], brand["impressions"], brand["likes"] + brand["comments"]))
+
+    shared_comment_keys = {key for key, brand_names in comment_brand_index.items() if len(brand_names) > 1}
+    for brand in period["brands"]:
+        if brand["name"] not in brand_comment_reports:
+            continue
+        community = brand_comment_reports[brand["name"]]["community"]
+        community["positiveExamples"] = filter_unique_examples(community.get("positiveExamples", []), shared_comment_keys)
+        community["negativeExamples"] = filter_unique_examples(community.get("negativeExamples", []), shared_comment_keys)
+        community["constructiveExamples"] = filter_unique_examples(community.get("constructiveExamples", []), shared_comment_keys)
 
     if period_dates:
         period["startDate"] = min(period_dates).isoformat()

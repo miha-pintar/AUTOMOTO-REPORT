@@ -176,14 +176,10 @@
               }
             ],
             "community": {
-              "commentsAnalysed": 51,
+              "commentsAnalysed": 50,
               "sentiment": "positive",
-              "sentimentSummary": "Analysed comments are mostly positive. Positive cues account for 51% of detected sentiment and negative cues for 4%.",
+              "sentimentSummary": "Analysed comments are mostly positive. Positive cues account for 54% of detected sentiment and negative cues for 12%.",
               "positiveExamples": [
-                {
-                  "text": "Katera najboljše izgleda? 😎",
-                  "target": "Design / appearance"
-                },
                 {
                   "text": "To je pa res deja vu na prve dni @avtoportret.si 😄 Srečno novi članici :)",
                   "target": "Vehicle / model"
@@ -199,8 +195,18 @@
               ],
               "negativeExamples": [
                 {
+                  "text": "Lep sam fakin elektrika! Katastrofa!",
+                  "target": "Design / appearance"
+                },
+                {
                   "text": "Top sam 10k predrag",
                   "target": "Price / value"
+                }
+              ],
+              "constructiveExamples": [
+                {
+                  "text": "A je polni hibrid enaki kot pri bigsterju?",
+                  "target": "Vehicle feature / usage"
                 }
               ]
             },
@@ -622,14 +628,49 @@
             "community": {
               "commentsAnalysed": 45,
               "sentiment": "positive",
-              "sentimentSummary": "Analysed comments are mostly positive. Positive cues account for 53% of detected sentiment and negative cues for 0%.",
+              "sentimentSummary": "Analysed comments are mostly positive. Positive cues account for 58% of detected sentiment and negative cues for 16%.",
               "positiveExamples": [
                 {
-                  "text": "To pa nebo drzalo drugi najbolj prodajen je Skoda octavia, Golf je tretji najbolj prodajen….",
-                  "target": "Volkswagen Golf"
+                  "text": "A niso fajn avti… sam vsedeš se noter in si spet 8 letni otrok… ni sam pleh, je dosti več 👌",
+                  "target": "Vehicle / model"
+                },
+                {
+                  "text": "The sound of timelessness. 🚘🤩",
+                  "target": "Vehicle / model"
+                },
+                {
+                  "text": "Ka pa barva! 😍 wau!",
+                  "target": "Vehicle feature / usage"
+                },
+                {
+                  "text": "takoj bi ga imel🔥🔥🔥",
+                  "target": "Vehicle / model"
                 }
               ],
-              "negativeExamples": []
+              "negativeExamples": [
+                {
+                  "text": "Kar je v EU prikazano je na Kitajskem ze preteklost. Cene novih le teh v EU pa strmo padajo... ne vem pa kdo kupi rabljenega 🤷‍♂️",
+                  "target": "Vehicle / model"
+                },
+                {
+                  "text": "Mislim da je malo mimo, da so dali možnost 1.5L motot v tako goro od avta.",
+                  "target": "Vehicle / model"
+                }
+              ],
+              "constructiveExamples": [
+                {
+                  "text": "A so pokazali tudi unega k so ga razvijali za 2017 WRC prvenstvo, pa so pred sezono razpustili ekipo? Avto (vsaj en) je bil narejen, pa zdej nek stoji 😢",
+                  "target": "Vehicle / model"
+                },
+                {
+                  "text": "Oo kok dobr, kake majo pa kej motorje pa pogon",
+                  "target": "Vehicle feature / usage"
+                },
+                {
+                  "text": "zakaj pa AR Junior se niste objavili?",
+                  "target": "Vehicle / model"
+                }
+              ]
             }
           }
         },
@@ -916,15 +957,29 @@
             ],
             "community": {
               "commentsAnalysed": 11,
-              "sentiment": "positive",
-              "sentimentSummary": "Analysed comments are mostly positive. Positive cues account for 64% of detected sentiment and negative cues for 9%.",
-              "positiveExamples": [
+              "sentiment": "neutral",
+              "sentimentSummary": "Analysed comments are mostly neutral. Positive cues account for 45% of detected sentiment and negative cues for 36%.",
+              "positiveExamples": [],
+              "negativeExamples": [
                 {
                   "text": "Pa tudi, ko pogledaš v vzratno ogledalo ali bočno te vseeno zaslepi, vsaj mene ko kakšen tak avtomobil zapelje za mano. Tako, da nič ne pomaga če on ne osvetli tvojega avtomobila, luči v ogledalih še vedno vidiš in te res oslepijo. Vsaj mene.",
                   "target": "Design / appearance"
+                },
+                {
+                  "text": "teli matricni žarometi imajo tudi eno slabo in nevarno lastnost. Ko se namreč nekdo s takimi žarometi pripelje za tabo, ti pa voziš npr. nek oldtimer z relativno šibkim snopom  žarometov (ali pa samo dotrajan xenon, kar ni redkost) se tisti spredaj znajde v svoji senci in ne vidi praktično nič. Kam lahko to pelje pa vemo.....",
+                  "target": "Vehicle feature / usage"
+                },
+                {
+                  "text": "Ciril, pojdi v Peking...boš na lastna ušesa slišal kako \"tiha\" so električna vozila kjer vsi vozniki neprestano pritiskajo oz konstantno drži hudo, saj se vozil ne sliši in se dogajajo nesreče...torej so se \"rešili\" hrupnih fosilnih vozil in dobili zelo \"tihe\" električne...zvočno onesnaženje se jim je povečalo, karbo odtis se pa ni znižal. Prav nič.",
+                  "target": "Vehicle feature / usage"
                 }
               ],
-              "negativeExamples": []
+              "constructiveExamples": [
+                {
+                  "text": "je opcija samodejnih luci vezana na narocnino?",
+                  "target": "Vehicle feature / usage"
+                }
+              ]
             }
           }
         },
@@ -1292,18 +1347,64 @@
               }
             ],
             "community": {
-              "commentsAnalysed": 58,
+              "commentsAnalysed": 57,
               "sentiment": "positive",
-              "sentimentSummary": "Analysed comments are mostly positive. Positive cues account for 52% of detected sentiment and negative cues for 3%.",
+              "sentimentSummary": "Analysed comments are mostly positive. Positive cues account for 56% of detected sentiment and negative cues for 16%.",
               "positiveExamples": [
                 {
+                  "text": "Ljudje se ne zavedajo, koliko je zahtevno shranjevati in pretakati tekoči vodik, še NASA ima probleme z vodikom. Dejstvo, da jim je ratalo spravit vse to v format normalne pumpe je mindblowing.",
+                  "target": "Vehicle feature / usage"
+                },
+                {
                   "text": "Dobila za darilo od moža, super avto, uživam v njemu že kakšen mesec. Baje da sem prva v Sloveniji ki ga je dobila 🥰",
+                  "target": "Vehicle / model"
+                },
+                {
+                  "text": "Ta review pa komaj cakam. 🙌🏻",
+                  "target": "Campaign content / format"
+                },
+                {
+                  "text": "❤️❤️❤️ legenda🙌🙌🙌",
+                  "target": "Vehicle / model"
+                },
+                {
+                  "text": "Šampione👏🔥🙏🙏",
                   "target": "Vehicle / model"
                 }
               ],
               "negativeExamples": [
                 {
+                  "text": "1. Cena ne more iti nižje kot 10% od trenutne. 2. Kar povzroči drugim avtom da zagorijo, ti v tem povzroči, da ti ga raznese in usmrti vse v bližini 10m.",
+                  "target": "Price / value"
+                },
+                {
+                  "text": "Debilno, izgube energije k gres iz umazanga premoga v elektriko in pol se to vse v vodik IN POL SPET NAZAJ…. Tok glupo, ogromne izgube, vodik kot prenosno sredstvo elektrke je najvecji nateg stoletja, sploh ni zelen.",
+                  "target": "Vehicle feature / usage"
+                },
+                {
                   "text": "Žal ne bo nikoli v uporabi. Zabloda tehnologije kar se avtomobilov tiče.  Se lahko pospravi.",
+                  "target": "Vehicle feature / usage"
+                },
+                {
+                  "text": "Hirušuma, tudi v Sloveniji 😮 Še vedno na žalost rinejo starotehnologijo iz 20% izkoristek🙉",
+                  "target": "Vehicle / model"
+                }
+              ],
+              "constructiveExamples": [
+                {
+                  "text": "Vprasanje: na koliko časa je potrebno pregledat tlačne posode in kdo lahko to naredi? Je to potrebno opravit, ko pride ta čas oz. Ali za to vedo na tehničnih pregledih?…. Lp GT",
+                  "target": "Vehicle feature / usage"
+                },
+                {
+                  "text": "Ta review pa komaj cakam. 🙌🏻",
+                  "target": "Campaign content / format"
+                },
+                {
+                  "text": "A zdržijo taki ekrani več kot 10let ekstremnih razmer?",
+                  "target": "Vehicle feature / usage"
+                },
+                {
+                  "text": "V čem je torej prednost? 😀",
                   "target": "Vehicle / model"
                 }
               ]
@@ -1624,9 +1725,32 @@
             "community": {
               "commentsAnalysed": 13,
               "sentiment": "positive",
-              "sentimentSummary": "Analysed comments are mostly positive. Positive cues account for 31% of detected sentiment and negative cues for 0%.",
-              "positiveExamples": [],
-              "negativeExamples": []
+              "sentimentSummary": "Analysed comments are mostly positive. Positive cues account for 62% of detected sentiment and negative cues for 8%.",
+              "positiveExamples": [
+                {
+                  "text": "Tole mora postat stalnica!! Objavite traso in pa seveda podatke + vreme pa temperaturo ob testu.",
+                  "target": "Campaign content / format"
+                },
+                {
+                  "text": "Izredno presenečen nad porabo, sem pričakoval kak liter več oziroma par kwh več",
+                  "target": "Vehicle feature / usage"
+                }
+              ],
+              "negativeExamples": [],
+              "constructiveExamples": [
+                {
+                  "text": "Dober bi bilo videt koliko je poraba na posamičnem segmentu, mesti, regionalna, avtocesta. Pa vmes samo stisnete potovalnega A (ponavadi imajo avti dva A in B) na nulo pa je.",
+                  "target": "Vehicle feature / usage"
+                },
+                {
+                  "text": "Tole mora postat stalnica!! Objavite traso in pa seveda podatke + vreme pa temperaturo ob testu.",
+                  "target": "Campaign content / format"
+                },
+                {
+                  "text": "Ej mene pa zanima trasa atmosferskega wltpja🤓",
+                  "target": "Vehicle feature / usage"
+                }
+              ]
             }
           }
         }

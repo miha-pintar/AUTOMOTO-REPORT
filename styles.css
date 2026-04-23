@@ -1219,6 +1219,11 @@ h3 {
   box-shadow: 0 0 0 5px rgba(234, 160, 160, 0.11);
 }
 
+.comment-examples--constructive h4::before {
+  background: var(--sky);
+  box-shadow: 0 0 0 5px rgba(120, 188, 232, 0.12);
+}
+
 .comment-example-grid {
   display: grid;
   gap: 12px;
@@ -1241,6 +1246,13 @@ h3 {
   border-left-color: var(--rose);
   background:
     linear-gradient(135deg, rgba(234, 160, 160, 0.1), transparent 42%),
+    #1d1d1d;
+}
+
+.comment-examples--constructive .comment-example-card {
+  border-left-color: var(--sky);
+  background:
+    linear-gradient(135deg, rgba(120, 188, 232, 0.12), transparent 42%),
     #1d1d1d;
 }
 

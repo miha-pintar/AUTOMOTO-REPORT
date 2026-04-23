@@ -738,7 +738,8 @@ function buildCommunityFeedback(report, brand) {
     sentimentNote: sentiment ? "" : community.sentimentNote || "sentimenta ni mogoče razbrati",
     sentimentSummary: community.sentimentSummary || "",
     positiveExamples: Array.isArray(community.positiveExamples) ? community.positiveExamples : [],
-    negativeExamples: Array.isArray(community.negativeExamples) ? community.negativeExamples : []
+    negativeExamples: Array.isArray(community.negativeExamples) ? community.negativeExamples : [],
+    constructiveExamples: Array.isArray(community.constructiveExamples) ? community.constructiveExamples : []
   };
 }
 
@@ -895,7 +896,8 @@ function renderBestContentMedia(item, mediaLabel) {
 function renderCommunityDetails(community = {}) {
   const positiveExamples = Array.isArray(community.positiveExamples) ? community.positiveExamples.slice(0, 5) : [];
   const negativeExamples = Array.isArray(community.negativeExamples) ? community.negativeExamples.slice(0, 5) : [];
-  const hasDetails = community.sentimentSummary || positiveExamples.length || negativeExamples.length;
+  const constructiveExamples = Array.isArray(community.constructiveExamples) ? community.constructiveExamples.slice(0, 5) : [];
+  const hasDetails = community.sentimentSummary || positiveExamples.length || negativeExamples.length || constructiveExamples.length;
   if (!hasDetails) return "";
 
   return `
@@ -903,14 +905,20 @@ function renderCommunityDetails(community = {}) {
       ${community.sentimentSummary ? `<p>${escapeHtml(community.sentimentSummary)}</p>` : ""}
       ${renderCommentExampleList("Positive signals", positiveExamples)}
       ${renderCommentExampleList("Negative signals", negativeExamples)}
+      ${renderCommentExampleList("Constructive questions and feedback", constructiveExamples)}
     </div>
   `;
 }
 
 function renderCommentExampleList(title, comments) {
   if (!comments.length) return "";
+  const modifier = title.toLowerCase().includes("negative")
+    ? "comment-examples--negative"
+    : title.toLowerCase().includes("constructive")
+      ? "comment-examples--constructive"
+      : "comment-examples--positive";
   return `
-    <div class="comment-examples ${title.toLowerCase().includes("negative") ? "comment-examples--negative" : "comment-examples--positive"}">
+    <div class="comment-examples ${modifier}">
       <h4>${escapeHtml(title)}</h4>
       <div class="comment-example-grid">
         ${comments.map(renderCommentExample).join("")}
