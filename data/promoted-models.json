@@ -1,0 +1,342 @@
+{
+  "purpose": "Reference list for detecting promoted automotive models from captions, URLs, hashtags, and related post metadata.",
+  "matchingMethods": [
+    "exact_brand_model_phrase",
+    "model_phrase",
+    "url_keywords",
+    "hashtags",
+    "known_aliases",
+    "model_derivatives"
+  ],
+  "brands": [
+    {
+      "brand": "Peugeot",
+      "brandAliases": [],
+      "models": [
+        { "name": "Peugeot 106", "variants": ["Rallye", "GTI"], "aliases": [] },
+        { "name": "Peugeot 107", "variants": [], "aliases": [] },
+        { "name": "Peugeot 108", "variants": [], "aliases": [] },
+        { "name": "Peugeot 205", "variants": ["GTI", "Rallye"], "aliases": [] },
+        { "name": "Peugeot 206", "variants": ["GTI", "RC"], "aliases": [] },
+        { "name": "Peugeot 207", "variants": ["RC", "GTI"], "aliases": [] },
+        { "name": "Peugeot 208", "variants": ["GTI", "PSE"], "aliases": [] },
+        { "name": "Peugeot 306", "variants": ["GTI", "S16"], "aliases": [] },
+        { "name": "Peugeot 307", "variants": ["CC"], "aliases": [] },
+        { "name": "Peugeot 308", "variants": ["GTI", "PSE", "SW"], "aliases": [] },
+        { "name": "Peugeot 405", "variants": ["Mi16", "T16"], "aliases": [] },
+        { "name": "Peugeot 406", "variants": ["Coupe"], "aliases": [] },
+        { "name": "Peugeot 407", "variants": ["Coupe"], "aliases": [] },
+        { "name": "Peugeot 2008", "variants": [], "aliases": [] },
+        { "name": "Peugeot 3008", "variants": ["Hybrid", "PSE"], "aliases": [] },
+        { "name": "Peugeot 5008", "variants": [], "aliases": [] },
+        { "name": "Peugeot RCZ", "variants": ["R"], "aliases": [] }
+      ]
+    },
+    {
+      "brand": "Toyota",
+      "brandAliases": [],
+      "models": [
+        { "name": "Toyota Yaris", "variants": ["GR Yaris"], "aliases": [] },
+        { "name": "Toyota Aygo", "variants": ["X"], "aliases": [] },
+        { "name": "Toyota Corolla", "variants": ["GR Corolla", "Touring Sports"], "aliases": [] },
+        { "name": "Toyota Corolla Cross", "variants": [], "aliases": [] },
+        { "name": "Toyota Camry", "variants": [], "aliases": [] },
+        { "name": "Toyota Avensis", "variants": [], "aliases": [] },
+        { "name": "Toyota Prius", "variants": ["Plug-in"], "aliases": [] },
+        { "name": "Toyota C-HR", "variants": ["Hybrid", "Plug-in"], "aliases": [] },
+        { "name": "Toyota RAV4", "variants": ["Hybrid", "Plug-in"], "aliases": [] },
+        { "name": "Toyota Highlander", "variants": ["Hybrid"], "aliases": [] },
+        { "name": "Toyota Land Cruiser", "variants": ["Prado"], "aliases": [] },
+        { "name": "Toyota Hilux", "variants": ["GR Sport"], "aliases": [] },
+        { "name": "Toyota Supra", "variants": ["GR Supra"], "aliases": [] },
+        { "name": "Toyota GR86", "variants": [], "aliases": [] }
+      ]
+    },
+    {
+      "brand": "Volkswagen",
+      "brandAliases": ["VW"],
+      "models": [
+        { "name": "Volkswagen Polo", "variants": ["GTI", "R WRC"], "aliases": [] },
+        { "name": "Volkswagen Golf", "variants": ["GTI", "GTD", "GTE", "R", "R32"], "aliases": [] },
+        { "name": "Volkswagen Passat", "variants": ["R-Line", "Alltrack"], "aliases": [] },
+        { "name": "Volkswagen Jetta", "variants": ["GLI"], "aliases": [] },
+        { "name": "Volkswagen Bora", "variants": [], "aliases": [] },
+        { "name": "Volkswagen Arteon", "variants": ["R", "Shooting Brake"], "aliases": [] },
+        { "name": "Volkswagen Scirocco", "variants": ["R"], "aliases": [] },
+        { "name": "Volkswagen Beetle", "variants": [], "aliases": ["hrošč"] },
+        { "name": "Volkswagen T-Cross", "variants": [], "aliases": [] },
+        { "name": "Volkswagen T-Roc", "variants": ["R", "Cabriolet"], "aliases": [] },
+        { "name": "Volkswagen Tiguan", "variants": ["R", "Allspace"], "aliases": [] },
+        { "name": "Volkswagen Touareg", "variants": ["R"], "aliases": [] },
+        { "name": "Volkswagen Sharan", "variants": [], "aliases": [] },
+        { "name": "Volkswagen Touran", "variants": [], "aliases": [] },
+        { "name": "Volkswagen ID.3", "variants": ["GTX"], "aliases": [] },
+        { "name": "Volkswagen ID.4", "variants": ["GTX"], "aliases": [] },
+        { "name": "Volkswagen ID.5", "variants": ["GTX"], "aliases": [] }
+      ]
+    },
+    {
+      "brand": "Škoda",
+      "brandAliases": ["Skoda"],
+      "models": [
+        { "name": "Škoda Fabia", "variants": ["RS", "Monte Carlo"], "aliases": [] },
+        { "name": "Škoda Octavia", "variants": ["RS", "Scout"], "aliases": [] },
+        { "name": "Škoda Superb", "variants": ["Laurin & Klement", "Sportline"], "aliases": [] },
+        { "name": "Škoda Rapid", "variants": ["Spaceback"], "aliases": [] },
+        { "name": "Škoda Scala", "variants": ["Monte Carlo"], "aliases": [] },
+        { "name": "Škoda Kamiq", "variants": ["Monte Carlo"], "aliases": [] },
+        { "name": "Škoda Karoq", "variants": ["Sportline"], "aliases": [] },
+        { "name": "Škoda Kodiaq", "variants": ["RS", "Scout", "Sportline"], "aliases": [] },
+        { "name": "Škoda Yeti", "variants": ["Outdoor"], "aliases": [] },
+        { "name": "Škoda Enyaq", "variants": ["RS", "Coupe"], "aliases": [] }
+      ]
+    },
+    {
+      "brand": "Dacia",
+      "brandAliases": [],
+      "models": [
+        { "name": "Dacia Logan", "variants": ["MCV", "Stepway"], "aliases": [] },
+        { "name": "Dacia Sandero", "variants": ["Stepway"], "aliases": [] },
+        { "name": "Dacia Duster", "variants": [], "aliases": [] },
+        { "name": "Dacia Lodgy", "variants": ["Stepway"], "aliases": [] },
+        { "name": "Dacia Dokker", "variants": ["Stepway"], "aliases": [] },
+        { "name": "Dacia Jogger", "variants": ["Hybrid"], "aliases": [] },
+        { "name": "Dacia Spring", "variants": [], "aliases": [] },
+        { "name": "Dacia Bigster", "variants": [], "aliases": [] }
+      ]
+    },
+    {
+      "brand": "Alpine",
+      "brandAliases": [],
+      "models": [
+        { "name": "Alpine A110", "variants": ["Pure", "Legende", "S", "R"], "aliases": [] },
+        { "name": "Alpine A310", "variants": [], "aliases": [] },
+        { "name": "Alpine GTA", "variants": ["V6 Turbo"], "aliases": [] },
+        { "name": "Alpine A610", "variants": [], "aliases": [] },
+        { "name": "Alpine A290", "variants": [], "aliases": [] },
+        { "name": "Alpine A390", "variants": [], "aliases": [] }
+      ]
+    },
+    {
+      "brand": "Renault",
+      "brandAliases": [],
+      "models": [
+        { "name": "Renault Clio", "variants": ["RS", "Williams"], "aliases": [] },
+        { "name": "Renault Mégane", "variants": ["RS", "RS Trophy"], "aliases": ["Renault Megane", "Megane", "Mégane"] },
+        { "name": "Renault Twingo", "variants": ["RS"], "aliases": [] },
+        { "name": "Renault Laguna", "variants": ["Coupe"], "aliases": [] },
+        { "name": "Renault Scénic", "variants": [], "aliases": ["Renault Scenic", "Scenic", "Scénic"] },
+        { "name": "Renault Kangoo", "variants": [], "aliases": [] },
+        { "name": "Renault Espace", "variants": [], "aliases": [] },
+        { "name": "Renault Talisman", "variants": ["Initiale Paris"], "aliases": [] },
+        { "name": "Renault Captur", "variants": [], "aliases": [] },
+        { "name": "Renault Kadjar", "variants": [], "aliases": [] },
+        { "name": "Renault Austral", "variants": [], "aliases": [] },
+        { "name": "Renault Koleos", "variants": [], "aliases": [] },
+        { "name": "Renault Arkana", "variants": [], "aliases": [] },
+        { "name": "Renault Zoe", "variants": [], "aliases": [] },
+        { "name": "Renault Twizy", "variants": [], "aliases": [] },
+        { "name": "Renault Rafale", "variants": [], "aliases": [] },
+        { "name": "Renault Scénic E-Tech", "variants": [], "aliases": ["Renault Scenic E-Tech", "Scenic E-Tech", "Scénic E-Tech"] },
+        { "name": "Renault Mégane E-Tech", "variants": [], "aliases": ["Renault Megane E-Tech", "Megane E-Tech", "Mégane E-Tech"] },
+        { "name": "Renault 5 E-Tech", "variants": [], "aliases": ["Renault 5", "petka", "5ka"] },
+        { "name": "Renault 4 E-Tech", "variants": [], "aliases": ["Renault 4", "katra", "katrca", "štirka", "4ka"] }
+      ]
+    },
+    {
+      "brand": "Audi",
+      "brandAliases": [],
+      "models": [
+        { "name": "Audi A1", "variants": [], "aliases": [] },
+        { "name": "Audi A3", "variants": ["S3", "RS3"], "aliases": [] },
+        { "name": "Audi A4", "variants": ["S4", "RS4", "Allroad"], "aliases": [] },
+        { "name": "Audi A5", "variants": ["S5", "RS5"], "aliases": [] },
+        { "name": "Audi A6", "variants": ["S6", "RS6", "Allroad"], "aliases": [] },
+        { "name": "Audi A7", "variants": ["S7", "RS7"], "aliases": [] },
+        { "name": "Audi A8", "variants": ["S8"], "aliases": [] },
+        { "name": "Audi TT", "variants": ["TTS", "TTRS"], "aliases": [] },
+        { "name": "Audi R8", "variants": [], "aliases": [] },
+        { "name": "Audi Q2", "variants": [], "aliases": [] },
+        { "name": "Audi Q3", "variants": ["RSQ3"], "aliases": [] },
+        { "name": "Audi Q5", "variants": ["SQ5"], "aliases": [] },
+        { "name": "Audi Q7", "variants": ["SQ7"], "aliases": [] },
+        { "name": "Audi Q8", "variants": ["SQ8", "RSQ8"], "aliases": [] },
+        { "name": "Audi e-tron", "variants": ["GT", "RS e-tron GT"], "aliases": ["Audi Q8 e-tron", "Q8 e-tron", "e-tron"] }
+      ]
+    },
+    {
+      "brand": "BMW",
+      "brandAliases": [],
+      "models": [
+        { "name": "BMW Serija 1", "variants": ["M135i", "M140i"], "aliases": ["BMW 1 Series", "BMW Series 1", "BMW serija 1"] },
+        { "name": "BMW Serija 2", "variants": ["M2", "Active Tourer"], "aliases": ["BMW 2 Series", "BMW Series 2", "BMW serija 2"] },
+        { "name": "BMW Serija 3", "variants": ["M3"], "aliases": ["BMW 3 Series", "BMW Series 3", "BMW serija 3"] },
+        { "name": "BMW Serija 4", "variants": ["M4"], "aliases": ["BMW 4 Series", "BMW Series 4", "BMW serija 4"] },
+        { "name": "BMW Serija 5", "variants": ["M5"], "aliases": ["BMW 5 Series", "BMW Series 5", "BMW serija 5"] },
+        { "name": "BMW Serija 6", "variants": ["M6"], "aliases": ["BMW 6 Series", "BMW Series 6", "BMW serija 6"] },
+        { "name": "BMW Serija 7", "variants": [], "aliases": ["BMW 7 Series", "BMW Series 7", "BMW serija 7"] },
+        { "name": "BMW Serija 8", "variants": ["M8"], "aliases": ["BMW 8 Series", "BMW Series 8", "BMW serija 8"] },
+        { "name": "BMW X1", "variants": ["M35i"], "aliases": [] },
+        { "name": "BMW X2", "variants": ["M35i"], "aliases": [] },
+        { "name": "BMW X3", "variants": ["M40i", "X3M"], "aliases": [] },
+        { "name": "BMW X4", "variants": ["M40i", "X4M"], "aliases": [] },
+        { "name": "BMW X5", "variants": ["M50i", "X5M"], "aliases": [] },
+        { "name": "BMW X6", "variants": ["X6M"], "aliases": [] },
+        { "name": "BMW X7", "variants": ["M60i"], "aliases": [] },
+        { "name": "BMW Z4", "variants": ["M40i"], "aliases": [] },
+        { "name": "BMW i3", "variants": [], "aliases": [] },
+        { "name": "BMW i4", "variants": ["M50"], "aliases": [] },
+        { "name": "BMW iX", "variants": ["M60"], "aliases": [] }
+      ]
+    },
+    {
+      "brand": "Mercedes-Benz",
+      "brandAliases": ["Mercedes"],
+      "models": [
+        { "name": "Mercedes A-Class", "variants": ["A35 AMG", "A45 AMG"], "aliases": ["Mercedes-Benz A-Class", "Mercedes A class", "Mercedes A klasa"] },
+        { "name": "Mercedes B-Class", "variants": [], "aliases": ["Mercedes-Benz B-Class", "Mercedes B class", "Mercedes B klasa"] },
+        { "name": "Mercedes C-Class", "variants": ["C43 AMG", "C63 AMG"], "aliases": ["Mercedes-Benz C-Class", "Mercedes C class", "Mercedes C klasa"] },
+        { "name": "Mercedes E-Class", "variants": ["E43 AMG", "E63 AMG", "All-Terrain"], "aliases": ["Mercedes-Benz E-Class", "Mercedes E class", "Mercedes E klasa"] },
+        { "name": "Mercedes S-Class", "variants": ["AMG", "Maybach"], "aliases": ["Mercedes-Benz S-Class", "Mercedes S class", "Mercedes S klasa"] },
+        { "name": "Mercedes CLA", "variants": ["CLA35 AMG", "CLA45 AMG"], "aliases": ["Mercedes-Benz CLA"] },
+        { "name": "Mercedes CLS", "variants": ["CLS53 AMG"], "aliases": ["Mercedes-Benz CLS"] },
+        { "name": "Mercedes GLA", "variants": ["AMG"], "aliases": ["Mercedes-Benz GLA"] },
+        { "name": "Mercedes GLB", "variants": ["AMG"], "aliases": ["Mercedes-Benz GLB"] },
+        { "name": "Mercedes GLC", "variants": ["AMG"], "aliases": ["Mercedes-Benz GLC"] },
+        { "name": "Mercedes GLE", "variants": ["AMG"], "aliases": ["Mercedes-Benz GLE"] },
+        { "name": "Mercedes GLS", "variants": ["AMG", "Maybach"], "aliases": ["Mercedes-Benz GLS"] },
+        { "name": "Mercedes G-Class", "variants": ["AMG"], "aliases": ["Mercedes-Benz G-Class", "Mercedes G", "G", "G-wagen"] },
+        { "name": "Mercedes SL", "variants": ["AMG"], "aliases": ["Mercedes-Benz SL"] },
+        { "name": "Mercedes SLK", "variants": ["AMG"], "aliases": ["Mercedes-Benz SLK", "Mercedes SLC", "Mercedes-Benz SLC"] },
+        { "name": "Mercedes AMG GT", "variants": [], "aliases": ["Mercedes-Benz AMG GT"] }
+      ]
+    },
+    {
+      "brand": "Volvo",
+      "brandAliases": [],
+      "models": [
+        { "name": "Volvo S40", "variants": [], "aliases": [] },
+        { "name": "Volvo S60", "variants": ["Polestar"], "aliases": [] },
+        { "name": "Volvo S80", "variants": [], "aliases": [] },
+        { "name": "Volvo S90", "variants": [], "aliases": [] },
+        { "name": "Volvo V40", "variants": [], "aliases": [] },
+        { "name": "Volvo V60", "variants": ["Polestar"], "aliases": [] },
+        { "name": "Volvo V70", "variants": [], "aliases": [] },
+        { "name": "Volvo V90", "variants": ["Cross Country"], "aliases": [] },
+        { "name": "Volvo XC40", "variants": ["Recharge"], "aliases": [] },
+        { "name": "Volvo XC60", "variants": ["Polestar", "Recharge"], "aliases": [] },
+        { "name": "Volvo XC70", "variants": [], "aliases": [] },
+        { "name": "Volvo XC90", "variants": ["Recharge"], "aliases": [] },
+        { "name": "Volvo C30", "variants": [], "aliases": [] },
+        { "name": "Volvo C70", "variants": [], "aliases": [] }
+      ]
+    },
+    {
+      "brand": "Nissan",
+      "brandAliases": [],
+      "models": [
+        { "name": "Nissan Micra", "variants": [], "aliases": ["micra", "mikra"] },
+        { "name": "Nissan Note", "variants": [], "aliases": [] },
+        { "name": "Nissan Almera", "variants": [], "aliases": [] },
+        { "name": "Nissan Primera", "variants": [], "aliases": [] },
+        { "name": "Nissan Pulsar", "variants": [], "aliases": [] },
+        { "name": "Nissan Leaf", "variants": [], "aliases": [] },
+        { "name": "Nissan Juke", "variants": ["Nismo"], "aliases": [] },
+        { "name": "Nissan Qashqai", "variants": [], "aliases": ["kaškai"] },
+        { "name": "Nissan X-Trail", "variants": [], "aliases": [] },
+        { "name": "Nissan Pathfinder", "variants": [], "aliases": [] },
+        { "name": "Nissan Navara", "variants": [], "aliases": [] },
+        { "name": "Nissan 350Z", "variants": [], "aliases": ["Nissan 370Z", "370Z", "350Z", "Z"] },
+        { "name": "Nissan GT-R", "variants": [], "aliases": ["Nissan GTR", "GT-R", "GTR"] }
+      ]
+    },
+    {
+      "brand": "Suzuki",
+      "brandAliases": [],
+      "models": [
+        { "name": "Suzuki Swift", "variants": ["Sport"], "aliases": [] },
+        { "name": "Suzuki Ignis", "variants": [], "aliases": [] },
+        { "name": "Suzuki Baleno", "variants": [], "aliases": [] },
+        { "name": "Suzuki SX4", "variants": ["S-Cross"], "aliases": [] },
+        { "name": "Suzuki Vitara", "variants": [], "aliases": [] },
+        { "name": "Suzuki Jimny", "variants": [], "aliases": [] },
+        { "name": "Suzuki Across", "variants": [], "aliases": [] }
+      ]
+    },
+    {
+      "brand": "Fiat",
+      "brandAliases": [],
+      "models": [
+        { "name": "Fiat Panda", "variants": ["4x4"], "aliases": ["panda"] },
+        { "name": "Fiat Punto", "variants": ["Abarth"], "aliases": ["punto"] },
+        { "name": "Fiat Grande Punto", "variants": ["Abarth"], "aliases": [] },
+        { "name": "Fiat Tipo", "variants": [], "aliases": [] },
+        { "name": "Fiat Bravo", "variants": [], "aliases": [] },
+        { "name": "Fiat Brava", "variants": [], "aliases": [] },
+        { "name": "Fiat Stilo", "variants": ["Abarth"], "aliases": [] },
+        { "name": "Fiat Croma", "variants": [], "aliases": [] },
+        { "name": "Fiat 500", "variants": ["Abarth"], "aliases": ["činčento"] },
+        { "name": "Fiat 500X", "variants": [], "aliases": [] },
+        { "name": "Fiat 500L", "variants": [], "aliases": [] },
+        { "name": "Fiat Multipla", "variants": [], "aliases": [] }
+      ]
+    },
+    {
+      "brand": "Honda",
+      "brandAliases": [],
+      "models": [
+        { "name": "Honda Civic", "variants": ["Type R"], "aliases": [] },
+        { "name": "Honda Accord", "variants": [], "aliases": [] },
+        { "name": "Honda Jazz", "variants": [], "aliases": [] },
+        { "name": "Honda CR-V", "variants": [], "aliases": [] },
+        { "name": "Honda HR-V", "variants": [], "aliases": [] },
+        { "name": "Honda NSX", "variants": [], "aliases": [] },
+        { "name": "Honda S2000", "variants": [], "aliases": [] }
+      ]
+    },
+    {
+      "brand": "Ford",
+      "brandAliases": [],
+      "models": [
+        { "name": "Ford Fiesta", "variants": ["ST"], "aliases": [] },
+        { "name": "Ford Focus", "variants": ["ST", "RS"], "aliases": [] },
+        { "name": "Ford Mondeo", "variants": [], "aliases": [] },
+        { "name": "Ford Mustang", "variants": ["GT", "Shelby"], "aliases": [] },
+        { "name": "Ford Kuga", "variants": [], "aliases": [] },
+        { "name": "Ford Edge", "variants": [], "aliases": [] },
+        { "name": "Ford Explorer", "variants": [], "aliases": [] },
+        { "name": "Ford Ranger", "variants": ["Raptor"], "aliases": [] }
+      ]
+    },
+    {
+      "brand": "Hyundai",
+      "brandAliases": [],
+      "models": [
+        { "name": "Hyundai i10", "variants": [], "aliases": [] },
+        { "name": "Hyundai i20", "variants": ["N"], "aliases": [] },
+        { "name": "Hyundai i30", "variants": ["N"], "aliases": [] },
+        { "name": "Hyundai i40", "variants": [], "aliases": [] },
+        { "name": "Hyundai Elantra", "variants": [], "aliases": [] },
+        { "name": "Hyundai Tucson", "variants": [], "aliases": [] },
+        { "name": "Hyundai Santa Fe", "variants": [], "aliases": [] },
+        { "name": "Hyundai Kona", "variants": ["N"], "aliases": [] },
+        { "name": "Hyundai Ioniq", "variants": ["5", "6"], "aliases": ["Hyundai Ioniq 5", "Hyundai Ioniq 6"] }
+      ]
+    },
+    {
+      "brand": "Kia",
+      "brandAliases": [],
+      "models": [
+        { "name": "Kia Picanto", "variants": [], "aliases": [] },
+        { "name": "Kia Rio", "variants": [], "aliases": [] },
+        { "name": "Kia Ceed", "variants": ["GT"], "aliases": [] },
+        { "name": "Kia Proceed", "variants": [], "aliases": [] },
+        { "name": "Kia Optima", "variants": [], "aliases": [] },
+        { "name": "Kia Stinger", "variants": ["GT"], "aliases": [] },
+        { "name": "Kia Sportage", "variants": [], "aliases": [] },
+        { "name": "Kia Sorento", "variants": [], "aliases": [] },
+        { "name": "Kia EV6", "variants": ["GT"], "aliases": [] }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,10 @@
 const dataUrl = "./data/report-data.json";
 
-const formatNumber = new Intl.NumberFormat("sl-SI");
+const formatNumber = new Intl.NumberFormat("sl-SI", {
+  maximumFractionDigits: 1
+});
+const formatColors = ["#e6542a", "#78bce8", "#58b87a"];
+const themeColors = ["#58b87a", "#ffc857", "#eaa0a0"];
 
 const state = {
   data: null,
@@ -295,7 +299,10 @@ function renderBrandPanel(brands) {
           </div>
           <div class="format-layout">
             ${renderFormatTable(report.formats)}
-            ${renderChartCanvas("brandFormatChart", "Format split")}
+            <div class="report-chart-stack">
+              ${renderChartCanvas("brandFormatChart", "Format split")}
+              ${renderLegend(report.formats, { labelKey: "type", colors: formatColors, variant: "compact", showValue: false })}
+            </div>
           </div>
         </article>
 
@@ -332,6 +339,14 @@ function renderBrandPanel(brands) {
 
         <article class="brand-report-block brand-report-block--wide">
           <div>
+            <h3>Influencer / profile breakdown</h3>
+            <p>Publishing mix and performance by profile for this brand.</p>
+          </div>
+          ${renderInfluencerBreakdownTable(report.influencerBreakdown)}
+        </article>
+
+        <article class="brand-report-block brand-report-block--wide">
+          <div>
             <h3>Best performing content</h3>
             <p>Top creative slots by format. Add post-level URLs when source exports include them.</p>
           </div>
@@ -355,7 +370,7 @@ function renderBrandPanel(brands) {
           </div>
           <div class="theme-layout">
             ${renderChartCanvas("brandThemeChart", "Theme split")}
-            ${renderLegend(report.themes)}
+            ${renderLegend(report.themes, { colors: themeColors })}
           </div>
         </article>
 
@@ -421,6 +436,7 @@ function buildBrandReport(brand, metrics) {
         url: ""
       }
     },
+    influencerBreakdown: buildInfluencerBreakdown(report),
     bestContent: report.bestContent || [
       { label: "Best performing video", creator: "Source needed", primaryMetric: "-", secondaryMetric: "-", mediaType: "Video" },
       { label: "Best performing photo", creator: "Source needed", primaryMetric: "-", secondaryMetric: "-", mediaType: "Photo" }
@@ -465,6 +481,70 @@ function renderFormatTable(formats) {
         <span>100%</span>
       </div>
     </div>
+  `;
+}
+
+function buildInfluencerBreakdown(report) {
+  const rows = report.influencerBreakdown || report.influencers || report.profiles;
+  if (Array.isArray(rows) && rows.length) return rows;
+  return [];
+}
+
+function renderInfluencerBreakdownTable(rows) {
+  return `
+    <div class="profile-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Influencer / profile</th>
+            <th>Total posts</th>
+            <th>Reels</th>
+            <th>Stories</th>
+            <th>Photos</th>
+            <th>Impressions</th>
+            <th>Likes</th>
+            <th>Comments</th>
+            <th>Engagement</th>
+            <th>ER</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${
+            rows.length
+              ? rows.map(renderInfluencerBreakdownRow).join("")
+              : `<tr><td class="profile-table__empty" colspan="10">Profile-level source data is needed for this brand.</td></tr>`
+          }
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderInfluencerBreakdownRow(row) {
+  const engagement =
+    row.engagement ??
+    (hasMetricValue(row.likes) || hasMetricValue(row.comments) ? toNumber(row.likes) + toNumber(row.comments) : null);
+  const er =
+    row.engagementRate ??
+    row.er ??
+    (hasMetricValue(engagement) && toNumber(row.impressions) ? (toNumber(engagement) / toNumber(row.impressions)) * 100 : null);
+  const name = row.url
+    ? `<a href="${escapeHtml(row.url)}" target="_blank" rel="noreferrer">${escapeHtml(row.name || row.profile || "Source needed")}</a>`
+    : escapeHtml(row.name || row.profile || "Source needed");
+
+  return `
+    <tr>
+      <td>${name}</td>
+      <td>${formatOptionalNumber(row.posts ?? row.totalPosts)}</td>
+      <td>${formatOptionalNumber(row.reels ?? row.videoPosts)}</td>
+      <td>${formatOptionalNumber(row.stories ?? row.storyPosts)}</td>
+      <td>${formatOptionalNumber(row.photos ?? row.photoPosts ?? row.staticPosts)}</td>
+      <td>${formatOptionalNumber(row.impressions)}</td>
+      <td>${formatOptionalNumber(row.likes)}</td>
+      <td>${formatOptionalNumber(row.comments)}</td>
+      <td>${formatOptionalNumber(engagement)}</td>
+      <td>${hasMetricValue(er) ? `${formatPercent(er)}%` : "-"}</td>
+    </tr>
   `;
 }
 
@@ -532,13 +612,23 @@ function renderChartCanvas(id, label) {
   `;
 }
 
-function renderLegend(items) {
+function renderLegend(items, options = {}) {
+  const labelKey = options.labelKey || "name";
+  const valueKey = options.valueKey || "share";
+  const colors = options.colors || [];
+  const showValue = options.showValue !== false;
+  const className = options.variant === "compact" ? "theme-legend theme-legend--compact" : "theme-legend";
   return `
-    <ul class="theme-legend">
+    <ul class="${className}">
       ${items
         .map(
-          (item) => `
-            <li><span>${escapeHtml(item.name || item.type)}</span><strong>${formatPercent(item.share)}%</strong></li>
+          (item, index) => `
+            <li>
+              <span><i style="--legend-color: ${escapeHtml(colors[index % colors.length] || "#b9b2a7")}"></i>${escapeHtml(
+                item[labelKey] || item.name || item.type
+              )}</span>
+              ${showValue ? `<strong>${formatPercent(item[valueKey] ?? item.share)}%</strong>` : ""}
+            </li>
           `
         )
         .join("")}
@@ -818,12 +908,12 @@ function renderBrandDoughnutCharts(report) {
   const formatCanvas = document.querySelector("#brandFormatChart");
   const themeCanvas = document.querySelector("#brandThemeChart");
 
-  renderDoughnutChart("brandFormatChart", formatCanvas, report.formats, ["#e6542a", "#78bce8", "#58b87a"], {
+  renderDoughnutChart("brandFormatChart", formatCanvas, report.formats, formatColors, {
     labelKey: "type",
     valueKey: "posts",
     tooltipSuffix: " posts"
   });
-  renderDoughnutChart("brandThemeChart", themeCanvas, report.themes, ["#58b87a", "#ffc857", "#eaa0a0"], {
+  renderDoughnutChart("brandThemeChart", themeCanvas, report.themes, themeColors, {
     labelKey: "name",
     valueKey: "share",
     tooltipSuffix: "%"
@@ -1014,7 +1104,7 @@ function engagementRate(item) {
 }
 
 function formatPercent(value) {
-  return Number(value || 0).toFixed(2);
+  return formatNumber.format(toNumber(value));
 }
 
 function percentShare(value, total) {
@@ -1035,10 +1125,18 @@ function formatReportValue(value, suffix = "") {
   return `${formatted}${suffix}`;
 }
 
+function formatOptionalNumber(value) {
+  return hasMetricValue(value) ? formatNumber.format(toNumber(value)) : "-";
+}
+
+function hasMetricValue(value) {
+  return value !== undefined && value !== null && value !== "";
+}
+
 function compactNumber(value) {
   const number = toNumber(value);
-  if (number >= 1000000) return `${(number / 1000000).toFixed(1)} M`;
-  if (number >= 1000) return `${(number / 1000).toFixed(number >= 100000 ? 0 : 1)} k`;
+  if (number >= 1000000) return `${formatNumber.format(number / 1000000)} M`;
+  if (number >= 1000) return `${formatNumber.format(number / 1000)} k`;
   return formatNumber.format(number);
 }
 

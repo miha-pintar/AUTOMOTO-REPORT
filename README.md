@@ -46,6 +46,12 @@ Glavni podatki so v:
 data/report-data.json
 ```
 
+Referencni seznam promoviranih modelov za prepoznavanje iz captionov, URL-jev, hashtagov in izvedenk je v:
+
+```text
+data/promoted-models.json
+```
+
 Osnovna struktura:
 
 - `activePeriodId`: katero obdobje je privzeto odprto
