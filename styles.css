@@ -1046,7 +1046,7 @@ h3 {
 
 .content-card dd {
   margin: 8px 0 0;
-  font-size: 24px;
+  font-size: clamp(20px, 2.1vw, 24px);
   font-weight: 800;
 }
 
@@ -1192,24 +1192,72 @@ h3 {
 
 .comment-examples {
   min-width: 0;
-  padding: 18px;
+  padding: 20px;
   background: #161616;
 }
 
 .comment-examples h4 {
-  margin: 0 0 12px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 0 0 14px;
   color: var(--accent-soft);
   font-size: 14px;
 }
 
-.comment-examples ul {
+.comment-examples h4::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--green);
+  box-shadow: 0 0 0 5px rgba(88, 184, 122, 0.12);
+}
+
+.comment-examples--negative h4::before {
+  background: var(--rose);
+  box-shadow: 0 0 0 5px rgba(234, 160, 160, 0.11);
+}
+
+.comment-example-grid {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   margin: 0;
-  padding-left: 18px;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.45;
+}
+
+.comment-example-card {
+  position: relative;
+  margin: 0;
+  border: 1px solid rgba(244, 240, 232, 0.1);
+  border-left: 3px solid var(--green);
+  border-radius: 7px;
+  padding: 14px 15px 15px;
+  background:
+    linear-gradient(135deg, rgba(88, 184, 122, 0.12), transparent 42%),
+    #1d1d1d;
+}
+
+.comment-examples--negative .comment-example-card {
+  border-left-color: var(--rose);
+  background:
+    linear-gradient(135deg, rgba(234, 160, 160, 0.1), transparent 42%),
+    #1d1d1d;
+}
+
+.comment-example-card figcaption {
+  margin-bottom: 9px;
+  color: var(--accent-soft);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.comment-example-card blockquote {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.48;
 }
 
 .community-note {
@@ -1240,12 +1288,13 @@ h3 {
   min-height: 540px;
   margin-top: 42px;
   overflow: hidden;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(244, 240, 232, 0.12);
   padding: clamp(14px, 2.4vw, 26px);
   background:
-    linear-gradient(90deg, transparent calc(50% - 0.5px), var(--line) calc(50% - 0.5px), var(--line) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
-    linear-gradient(0deg, transparent calc(50% - 0.5px), var(--line) calc(50% - 0.5px), var(--line) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+    linear-gradient(135deg, rgba(244, 240, 232, 0.055), transparent 44%),
+    radial-gradient(circle at 78% 18%, rgba(230, 84, 42, 0.13), transparent 32%),
     var(--surface);
+  box-shadow: inset 0 1px 0 rgba(244, 240, 232, 0.05), 0 24px 70px rgba(0, 0, 0, 0.18);
 }
 
 table {

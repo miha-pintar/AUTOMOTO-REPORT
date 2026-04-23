@@ -111,7 +111,7 @@ Refresh procedure:
 
 1. Identify the brand from the file name and map it to the matching brand object in `data/report-data.json`.
 2. Parse each post/content CSV and aggregate brand metrics:
-   - Before aggregation, remove duplicated feed `Post` rows when Instagram exports the same creative as both a feed post and a Reel. Treat rows as duplicates when the feed `Post` and Reel have the same publication date/time, the same media ID/number in `src`, and the same `content_caption`; keep the Reel and remove the feed `Post`.
+   - Before aggregation, remove duplicated feed `Post` rows when Instagram exports the same creative as both a feed post and a Reel. Treat rows as duplicates only when the feed `Post` and Reel have the same publication date/time, the same media ID/number in `src`, a completely identical `content_caption`, and matching source engagement fields; keep the Reel and remove the feed `Post`.
    - `posts`: total rows/content items.
    - `videoPosts`/`photoPosts`: normalize `type contenta` into video/reel/story/photo/static formats using the source labels.
    - `impressions`, `likes`, `comments`: sum numeric values.
@@ -130,7 +130,7 @@ Refresh procedure:
    - Always use two slots: left is `Best performing post` and right is `Best performing story`.
    - Choose the best performing post/reel/photo by highest impressions, excluding Stories.
    - Choose the best performing Story by highest impressions.
-   - For the post slot, show impressions and engagement rate.
+   - For the post slot, show impressions, engagement rate, likes, and comments.
    - For the Story slot, show impressions and impression rate, calculated as `impressions / followers * 100`.
    - Include creator, format/media type, metric labels, and metric values.
    - Build media URLs from `src` by prefixing it with `https://cdn.epidemic.co/media/`.
@@ -139,7 +139,7 @@ Refresh procedure:
    - Determine overall sentiment as `positive`, `neutral`, or `negative`.
    - Set `commentsAnalysed` to the number of comments actually reviewed.
    - Summarize useful qualitative findings for the client where the current JSON/UI supports them.
-   - When useful, identify up to five representative positive comments and up to five representative negative comments, paraphrased or quoted only when appropriate and safe.
+   - When useful, identify up to five representative positive comments and up to five representative negative comments that express an opinion about the brand, model, vehicle, price, design, feature, or campaign topic. Avoid generic comments such as only "super" or emoji-only reactions when better examples exist.
 8. When all brand files for the period are available, create or update the overall/benchmark summary across brands:
    - Compare total activity, impressions, engagement rate, strongest formats, strongest themes, promoted models, and qualitative sentiment.
    - Keep the summary practical and client-facing, focused on campaign learning and future content instructions.

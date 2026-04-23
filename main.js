@@ -348,7 +348,7 @@ function render() {
   nodes.clientLabel.textContent = state.data.client;
   nodes.reportTitle.textContent = state.data.brand;
   nodes.periodSummary.textContent = period.summary;
-  nodes.periodLabel.textContent = period.label || periodRange;
+  nodes.periodLabel.textContent = periodRange;
   nodes.marketLabel.textContent = period.market || "Market not set";
   nodes.brandLabel.textContent = `Brands: ${reviewedBrands.join(", ")}`;
   nodes.contentCount.innerHTML = `<strong>${formatNumber.format(totals.posts)}</strong> pieces of content were created.`;
@@ -849,6 +849,7 @@ function renderPerformanceTable(rows) {
 
 function renderBestContent(item, brandIndex, contentIndex) {
   const mediaLabel = item.mediaType || "Post";
+  const extraMetrics = Array.isArray(item.extraMetrics) ? item.extraMetrics.filter((metric) => metric?.label) : [];
 
   return `
     <div class="content-card" data-brand-index="${escapeHtml(brandIndex)}" data-content-index="${escapeHtml(contentIndex)}">
@@ -862,6 +863,13 @@ function renderBestContent(item, brandIndex, contentIndex) {
         <dl>
           <div><dt>${escapeHtml(item.primaryLabel || "Primary")}</dt><dd>${escapeHtml(item.primaryMetric)}</dd></div>
           <div><dt>${escapeHtml(item.secondaryLabel || "Secondary")}</dt><dd>${escapeHtml(item.secondaryMetric)}</dd></div>
+          ${extraMetrics
+            .map(
+              (metric) => `
+                <div><dt>${escapeHtml(metric.label)}</dt><dd>${escapeHtml(metric.value ?? metric.metric ?? "-")}</dd></div>
+              `
+            )
+            .join("")}
         </dl>
       </div>
     </div>
@@ -899,12 +907,24 @@ function renderCommunityDetails(community) {
 function renderCommentExampleList(title, comments) {
   if (!comments.length) return "";
   return `
-    <div class="comment-examples">
+    <div class="comment-examples ${title.toLowerCase().includes("negative") ? "comment-examples--negative" : "comment-examples--positive"}">
       <h4>${escapeHtml(title)}</h4>
-      <ul>
-        ${comments.map((comment) => `<li>${escapeHtml(comment)}</li>`).join("")}
-      </ul>
+      <div class="comment-example-grid">
+        ${comments.map(renderCommentExample).join("")}
+      </div>
     </div>
+  `;
+}
+
+function renderCommentExample(comment) {
+  const text = typeof comment === "string" ? comment : comment.text || comment.comment || "";
+  const target = typeof comment === "string" ? "" : comment.target || comment.topic || "";
+
+  return `
+    <figure class="comment-example-card">
+      ${target ? `<figcaption>${escapeHtml(target)}</figcaption>` : ""}
+      <blockquote>${escapeHtml(text)}</blockquote>
+    </figure>
   `;
 }
 
@@ -1000,11 +1020,15 @@ function renderCompetitorMap(brands) {
           label: "Brands",
           data: chartData,
           parsing: false,
-          backgroundColor: "#e6542a",
-          borderColor: "#f4f0e8",
-          borderWidth: 2,
-          pointRadius: 8,
-          pointHoverRadius: 10
+          pointBackgroundColor: scatterPointFill,
+          pointBorderColor: "rgba(244, 240, 232, 0.86)",
+          pointBorderWidth: 1.5,
+          pointRadius: 8.5,
+          pointHoverBackgroundColor: "#ffc857",
+          pointHoverBorderColor: "#f4f0e8",
+          pointHoverBorderWidth: 2,
+          pointHoverRadius: 11,
+          pointHitRadius: 12
         }
       ]
     },
@@ -1050,11 +1074,16 @@ function renderCompetitorMap(brands) {
             font: chartFont(12, 800)
           },
           grid: {
-            color: "rgba(244, 240, 232, 0.08)"
+            color: "rgba(244, 240, 232, 0.075)",
+            drawTicks: false
+          },
+          border: {
+            display: false
           },
           ticks: {
             color: "#b9b2a7",
-            font: chartFont(11)
+            font: chartFont(11),
+            padding: 10
           }
         },
         y: {
@@ -1067,17 +1096,22 @@ function renderCompetitorMap(brands) {
             font: chartFont(12, 800)
           },
           grid: {
-            color: "rgba(244, 240, 232, 0.08)"
+            color: "rgba(244, 240, 232, 0.075)",
+            drawTicks: false
+          },
+          border: {
+            display: false
           },
           ticks: {
             color: "#b9b2a7",
             font: chartFont(11),
+            padding: 10,
             callback: (value) => `${formatPercent(value)}%`
           }
         }
       }
     },
-    plugins: [scatterLabelPlugin()]
+    plugins: [scatterPointShadowPlugin(), scatterLabelPlugin()]
   });
 }
 
@@ -1310,6 +1344,40 @@ function chartFont(size, weight = 600) {
     size,
     weight,
     family: "Inter, system-ui, sans-serif"
+  };
+}
+
+function scatterPointFill(context) {
+  const { chart } = context;
+  const { ctx, chartArea } = chart;
+  const meta = chart.getDatasetMeta(context.datasetIndex);
+  const point = meta?.data?.[context.dataIndex];
+
+  if (!chartArea || !point) return "#e6542a";
+
+  const gradient = ctx.createRadialGradient(point.x - 3, point.y - 4, 1, point.x, point.y, 11);
+  gradient.addColorStop(0, "#ffc857");
+  gradient.addColorStop(0.42, "#e6542a");
+  gradient.addColorStop(1, "#9f2d22");
+  return gradient;
+}
+
+function scatterPointShadowPlugin() {
+  return {
+    id: "scatterPointShadowPlugin",
+    beforeDatasetDraw(chart, args) {
+      if (args.index !== 0) return;
+
+      chart.ctx.save();
+      chart.ctx.shadowColor = "rgba(230, 84, 42, 0.42)";
+      chart.ctx.shadowBlur = 16;
+      chart.ctx.shadowOffsetY = 5;
+    },
+    afterDatasetDraw(chart, args) {
+      if (args.index !== 0) return;
+
+      chart.ctx.restore();
+    }
   };
 }
 

@@ -5,6 +5,7 @@ import re
 import sys
 import zipfile
 from collections import Counter, defaultdict
+from datetime import datetime, timedelta
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
@@ -80,6 +81,18 @@ def norm(value):
     return str(value or "").strip()
 
 
+def row_value(row, *keys):
+    normalized = {
+        norm(key).lower().replace("_", " "): value
+        for key, value in row.items()
+    }
+    for key in keys:
+        value = normalized.get(norm(key).lower().replace("_", " "))
+        if norm(value):
+            return value
+    return ""
+
+
 def number(value):
     value = norm(value).replace(".", "").replace(",", ".") if isinstance(value, str) and "," in value else norm(value)
     try:
@@ -97,6 +110,69 @@ def read_csv(path):
         return list(csv.DictReader(handle))
 
 
+def parse_post_date(value):
+    raw = norm(value)
+    if not raw:
+        return None
+
+    if re.fullmatch(r"\d+(?:\.\d+)?", raw):
+        serial = float(raw)
+        if 20000 <= serial <= 60000:
+            return (datetime(1899, 12, 30) + timedelta(days=serial)).date()
+
+    iso_match = re.search(r"\d{4}-\d{1,2}-\d{1,2}", raw)
+    if iso_match:
+        try:
+            return datetime.strptime(iso_match.group(0), "%Y-%m-%d").date()
+        except ValueError:
+            return None
+
+    european_match = re.search(r"\d{1,2}[./]\d{1,2}[./]\d{2,4}", raw)
+    if european_match:
+        candidate = european_match.group(0)
+        separator = "." if "." in candidate else "/"
+        day, month, year = candidate.split(separator)
+        if len(year) == 2:
+            year = f"20{year}"
+        for day_value, month_value in ((day, month), (month, day)):
+            try:
+                return datetime(int(year), int(month_value), int(day_value)).date()
+            except ValueError:
+                continue
+
+    for pattern in ("%d %b %Y", "%d %B %Y", "%b %d, %Y", "%B %d, %Y"):
+        try:
+            return datetime.strptime(raw, pattern).date()
+        except ValueError:
+            continue
+
+    return None
+
+
+def post_date(row):
+    return parse_post_date(
+        row_value(
+            row,
+            "date",
+            "publication date",
+            "publication_date",
+            "published_at",
+            "published at",
+            "created_time",
+            "created time",
+            "timestamp",
+            "time",
+        )
+    )
+
+
+def date_range_from_posts(rows):
+    dates = [date for date in (post_date(row) for row in rows) if date]
+    if not dates:
+        return None
+    return min(dates), max(dates)
+
+
 def media_identifier(row):
     src = norm(row.get("src"))
     if not src:
@@ -106,9 +182,17 @@ def media_identifier(row):
 
 def row_signature(row):
     return (
-        norm(row.get("date")),
+        norm(row_value(row, "date", "publication date", "publication_date", "published_at", "published at")),
         media_identifier(row),
-        " ".join(norm(row.get("content_caption")).split()).lower(),
+        str(row.get("content_caption") or ""),
+    )
+
+
+def interaction_signature(row):
+    return (
+        norm(row.get("likes")),
+        norm(row.get("comments")),
+        norm(row.get("engagement")),
     )
 
 
@@ -120,12 +204,20 @@ def is_reel(row):
     return norm(row.get("src")).lower().endswith(".mp4") or "reel" in norm(row.get("type")).lower()
 
 
+def is_exported_reel(row):
+    return "reel" in norm(row.get("type")).lower()
+
+
 def remove_feed_post_reel_duplicates(rows):
-    reel_signatures = {row_signature(row) for row in rows if is_reel(row)}
+    reel_signatures = {
+        (row_signature(row), interaction_signature(row))
+        for row in rows
+        if is_exported_reel(row)
+    }
     clean_rows = []
     removed = 0
     for row in rows:
-        if is_feed_post(row) and row_signature(row) in reel_signatures:
+        if is_feed_post(row) and (row_signature(row), interaction_signature(row)) in reel_signatures:
             removed += 1
             continue
         clean_rows.append(row)
@@ -374,7 +466,7 @@ def build_post_report(rows, model_terms, included_brands):
     }
 
 
-def content_item(item, label, primary_label, primary_value, secondary_label, secondary_value):
+def content_item(item, label, primary_label, primary_value, secondary_label, secondary_value, extra_metrics=None):
     row = item["row"]
     src = norm(row.get("src"))
     return {
@@ -386,6 +478,7 @@ def content_item(item, label, primary_label, primary_value, secondary_label, sec
         "secondaryMetric": secondary_value,
         "mediaType": item["mediaType"],
         "mediaUrl": MEDIA_PREFIX + src if src else "",
+        "extraMetrics": extra_metrics or [],
     }
 
 
@@ -412,6 +505,10 @@ def build_best_content(ranked):
                 compact(top_post["impressions"]),
                 "Engagement rate",
                 f"{top_post['engagementRate']:.2f}%",
+                [
+                    {"label": "Likes", "value": compact(intish(top_post["row"].get("likes")))},
+                    {"label": "Comments", "value": compact(intish(top_post["row"].get("comments")))},
+                ],
             )
         )
     if top_story:
@@ -440,6 +537,46 @@ def sentiment_for_comment(text):
     return "neutral"
 
 
+def comment_target(text, model_terms, allowed_brands):
+    lower = text.lower()
+    allowed = [brand.lower() for brand in allowed_brands]
+    for model, term in model_terms:
+        if not any(model.lower().startswith(brand) or model.lower() == brand for brand in allowed):
+            continue
+        pattern = r"(?<![\w])" + re.escape(term).replace(r"\ ", r"[\s#_-]+") + r"(?![\w])"
+        if re.search(pattern, lower, flags=re.IGNORECASE):
+            return model
+    if any(term in lower for term in ["cena", "drag", "predrag", "popust", "vrednost"]):
+        return "Price / value"
+    if any(term in lower for term in ["lep", "lepa", "grd", "oblika", "dizajn", "design", "zgleda", "izgleda"]):
+        return "Design / appearance"
+    vehicle_terms = ["avto", "vozilo", "model", "motor", "notranjost", "oblika", "cena", "test"]
+    if any(term in lower for term in vehicle_terms):
+        return "Vehicle / model"
+    return ""
+
+
+def is_meaningful_opinion(comment, model_terms, allowed_brands):
+    if len(comment.strip()) < 12:
+        return False
+    if not comment_target(comment, model_terms, allowed_brands):
+        return False
+    lower = comment.lower()
+    opinion_terms = [
+        *POSITIVE_WORDS,
+        *NEGATIVE_WORDS,
+        "všeč",
+        "zgleda",
+        "izgleda",
+        "cena",
+        "kup",
+        "vozil",
+        "primerj",
+        "preprič",
+    ]
+    return any(term in lower for term in opinion_terms)
+
+
 def comment_text(row):
     preferred = ["comment", "comments", "text", "body", "message", "content", "caption"]
     for key in preferred:
@@ -451,7 +588,7 @@ def comment_text(row):
     return max(values, key=len)
 
 
-def build_comment_report(rows):
+def build_comment_report(rows, model_terms, allowed_brands):
     comments = [comment_text(row) for row in rows]
     comments = [comment for comment in comments if comment and not comment.isdigit()]
     counts = Counter(sentiment_for_comment(comment) for comment in comments)
@@ -467,8 +604,22 @@ def build_comment_report(rows):
     else:
         overall = "neutral"
 
-    positives = [comment for comment in comments if sentiment_for_comment(comment) == "positive"][:5]
-    negatives = [comment for comment in comments if sentiment_for_comment(comment) == "negative"][:5]
+    positives = [
+        {
+            "text": comment,
+            "target": comment_target(comment, model_terms, allowed_brands),
+        }
+        for comment in comments
+        if sentiment_for_comment(comment) == "positive" and is_meaningful_opinion(comment, model_terms, allowed_brands)
+    ][:5]
+    negatives = [
+        {
+            "text": comment,
+            "target": comment_target(comment, model_terms, allowed_brands),
+        }
+        for comment in comments
+        if sentiment_for_comment(comment) == "negative" and is_meaningful_opinion(comment, model_terms, allowed_brands)
+    ][:5]
     insight = (
         f"Analysed comments are mostly {overall}. "
         f"Positive cues account for {round(positive_share * 100)}% of detected sentiment and negative cues for {round(negative_share * 100)}%."
@@ -488,18 +639,20 @@ def refresh(report_path, models_path, posts_dir, comments_dir):
     period = data["periods"][0]
     period["id"] = "2026-apr-23"
     period["label"] = "23 April 2026 export"
-    period["startDate"] = "2024-06-19"
-    period["endDate"] = "2026-04-23"
     period["summary"] = "Benchmark overview of Instagram creator activity based on post and comment exports supplied on 23 April 2026."
     data["activePeriodId"] = period["id"]
 
     summaries = []
     duplicate_summary = {}
+    period_dates = []
     for brand in period["brands"]:
         if brand["name"] not in POST_FILES:
             continue
         rows, removed_duplicates = remove_feed_post_reel_duplicates(read_csv(posts_dir / POST_FILES[brand["name"]]))
         duplicate_summary[brand["name"]] = removed_duplicates
+        date_range = date_range_from_posts(rows)
+        if date_range:
+            period_dates.extend(date_range)
         allowed_brands = list(dict.fromkeys([*(brand.get("brandsIncluded") or []), brand["name"].split()[0]]))
         post_report = build_post_report(rows, model_terms, allowed_brands)
         brand.update(post_report["metrics"])
@@ -519,8 +672,12 @@ def refresh(report_path, models_path, posts_dir, comments_dir):
         comment_rows = []
         for file_name in COMMENT_FILES.get(brand["name"], []):
             comment_rows.extend(read_xlsx(comments_dir / file_name))
-        report["community"] = build_comment_report(comment_rows)
+        report["community"] = build_comment_report(comment_rows, model_terms, allowed_brands)
         summaries.append((brand["name"], brand["posts"], brand["impressions"], brand["likes"] + brand["comments"]))
+
+    if period_dates:
+        period["startDate"] = min(period_dates).isoformat()
+        period["endDate"] = max(period_dates).isoformat()
 
     top_impressions = max(summaries, key=lambda item: item[2])
     top_engagement = max(summaries, key=lambda item: item[3])

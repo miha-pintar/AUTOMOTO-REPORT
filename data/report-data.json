@@ -6,8 +6,8 @@
     {
       "id": "2026-apr-23",
       "label": "23 April 2026 export",
-      "startDate": "2024-06-19",
-      "endDate": "2026-04-23",
+      "startDate": "2023-04-12",
+      "endDate": "2026-04-22",
       "market": "Slovenia",
       "summary": "Across the supplied exports, 5 brands were analysed. Toyota Slovenija generated the highest impressions, while Toyota Slovenija generated the highest total engagement.",
       "brands": [
@@ -18,68 +18,68 @@
             "Dacia",
             "Alpine"
           ],
-          "posts": 181,
-          "videoPosts": 151,
+          "posts": 205,
+          "videoPosts": 175,
           "photoPosts": 30,
-          "impressions": 430949,
-          "likes": 6387,
-          "comments": 160,
+          "impressions": 568778,
+          "likes": 15848,
+          "comments": 293,
           "report": {
             "contentPreviewUrl": "https://be.epidemic.co/campaigns/36713?share=ngUFb6Qx2yYzoHxxD66f5t",
-            "summary": "During the reviewed export period, the brand published 181 pieces of Instagram content and generated 430.9k impressions. The strongest readout comes from creator-led posts with measurable engagement, while caption analysis highlights the main promoted models and recurring content themes.",
+            "summary": "During the reviewed export period, the brand published 205 pieces of Instagram content and generated 568.8k impressions. The strongest readout comes from creator-led posts with measurable engagement, while caption analysis highlights the main promoted models and recurring content themes.",
             "formats": [
               {
                 "type": "Story",
                 "posts": 119,
-                "share": 66
+                "share": 58
               },
               {
                 "type": "Reel",
-                "posts": 32,
-                "share": 18
+                "posts": 56,
+                "share": 27
               },
               {
                 "type": "Photo",
                 "posts": 30,
-                "share": 17
+                "share": 15
               }
             ],
             "performance": [
               {
                 "metric": "Impressions",
-                "total": 430949,
-                "average": 2381
+                "total": 568778,
+                "average": 2775
               },
               {
                 "metric": "Likes",
-                "total": 6387,
-                "average": 35
+                "total": 15848,
+                "average": 77
               },
               {
                 "metric": "Comments",
-                "total": 160,
+                "total": 293,
                 "average": 1
               },
               {
                 "metric": "Engagement",
-                "total": 6547,
-                "average": 36
+                "total": 16141,
+                "average": 79
               },
               {
                 "metric": "Engagement rate",
-                "total": 1.52,
-                "average": 1.52,
+                "total": 2.84,
+                "average": 2.84,
                 "suffix": "%"
               }
             ],
             "creatorActivity": {
               "activeCreators": 9,
-              "contentCount": 181,
-              "averagePosts": 20.1,
+              "contentCount": 205,
+              "averagePosts": 22.8,
               "mostActive": {
-                "name": "@motorevija",
-                "posts": 39,
-                "url": "https://www.instagram.com/motorevija"
+                "name": "@atmosferci",
+                "posts": 45,
+                "url": "https://www.instagram.com/atmosferci"
               }
             },
             "bestContent": [
@@ -91,7 +91,17 @@
                 "secondaryLabel": "Engagement rate",
                 "secondaryMetric": "1.80%",
                 "mediaType": "Reel",
-                "mediaUrl": "https://cdn.epidemic.co/media/reels/src/3803251100032215403.mp4"
+                "mediaUrl": "https://cdn.epidemic.co/media/reels/src/3803251100032215403.mp4",
+                "extraMetrics": [
+                  {
+                    "label": "Likes",
+                    "value": "407"
+                  },
+                  {
+                    "label": "Comments",
+                    "value": "3"
+                  }
+                ]
               },
               {
                 "label": "Best performing story",
@@ -101,34 +111,35 @@
                 "secondaryLabel": "Impression rate",
                 "secondaryMetric": "9.55%",
                 "mediaType": "Story",
-                "mediaUrl": "https://cdn.epidemic.co/media/stories/src/3778007693093686974.jpg"
+                "mediaUrl": "https://cdn.epidemic.co/media/stories/src/3778007693093686974.jpg",
+                "extraMetrics": []
               }
             ],
             "promotedModels": [
               {
                 "model": "General promotion / model unclear",
-                "posts": 139,
-                "impressions": 268361
-              },
-              {
-                "model": "Renault Clio",
-                "posts": 11,
-                "impressions": 21075
+                "posts": 147,
+                "impressions": 301799
               },
               {
                 "model": "Renault Twingo",
-                "posts": 10,
-                "impressions": 17915
+                "posts": 14,
+                "impressions": 44447
+              },
+              {
+                "model": "Renault Clio",
+                "posts": 13,
+                "impressions": 39545
               },
               {
                 "model": "Renault 4 E-Tech",
-                "posts": 8,
-                "impressions": 37690
+                "posts": 13,
+                "impressions": 56056
               },
               {
                 "model": "Renault 5 E-Tech",
-                "posts": 4,
-                "impressions": 11441
+                "posts": 5,
+                "impressions": 23643
               },
               {
                 "model": "Dacia Bigster",
@@ -136,32 +147,32 @@
                 "impressions": 22195
               },
               {
+                "model": "Renault Mégane",
+                "posts": 3,
+                "impressions": 25724
+              },
+              {
                 "model": "Alpine A290",
                 "posts": 2,
                 "impressions": 12163
-              },
-              {
-                "model": "Renault Rafale",
-                "posts": 2,
-                "impressions": 4431
               }
             ],
             "themes": [
               {
                 "name": "Lifestyle",
-                "share": 72
+                "share": 70
               },
               {
                 "name": "Product launches",
-                "share": 14
+                "share": 16
               },
               {
                 "name": "Sustainability",
-                "share": 8
+                "share": 9
               },
               {
                 "name": "Test drives",
-                "share": 6
+                "share": 5
               }
             ],
             "community": {
@@ -169,43 +180,56 @@
               "sentiment": "positive",
               "sentimentSummary": "Analysed comments are mostly positive. Positive cues account for 51% of detected sentiment and negative cues for 4%.",
               "positiveExamples": [
-                "Hudo! 🤩",
-                "Super",
-                "Super",
-                "Super",
-                "Super"
+                {
+                  "text": "Katera najboljše izgleda? 😎",
+                  "target": "Design / appearance"
+                },
+                {
+                  "text": "To je pa res deja vu na prve dni @avtoportret.si 😄 Srečno novi članici :)",
+                  "target": "Vehicle / model"
+                },
+                {
+                  "text": "Super avto 😍😍🙌🙌 bravo Renault",
+                  "target": "Renault"
+                },
+                {
+                  "text": "V gibanju izgleda še boljše 😍",
+                  "target": "Design / appearance"
+                }
               ],
               "negativeExamples": [
-                "Top sam 10k predrag",
-                "Koj grd"
+                {
+                  "text": "Top sam 10k predrag",
+                  "target": "Price / value"
+                }
               ]
             },
             "creatorBreakdown": [
               {
                 "name": "@atmosferci",
                 "url": "https://www.instagram.com/atmosferci",
-                "posts": 37,
-                "reels": 4,
+                "posts": 45,
+                "reels": 12,
                 "stories": 32,
                 "photos": 1,
-                "impressions": 164240,
-                "likes": 1604,
-                "comments": 19,
-                "engagement": 1623,
-                "engagementRate": 0.99
+                "impressions": 255059,
+                "likes": 3657,
+                "comments": 55,
+                "engagement": 3712,
+                "engagementRate": 1.46
               },
               {
                 "name": "@jerry.o.avtih",
                 "url": "https://www.instagram.com/jerry.o.avtih",
-                "posts": 18,
-                "reels": 6,
+                "posts": 29,
+                "reels": 17,
                 "stories": 11,
                 "photos": 1,
-                "impressions": 106786,
-                "likes": 2964,
-                "comments": 63,
-                "engagement": 3027,
-                "engagementRate": 2.83
+                "impressions": 151056,
+                "likes": 10209,
+                "comments": 155,
+                "engagement": 10364,
+                "engagementRate": 6.86
               },
               {
                 "name": "@jure_gregorcic",
@@ -236,15 +260,15 @@
               {
                 "name": "@avtomobilnost.si",
                 "url": "https://www.instagram.com/avtomobilnost.si",
-                "posts": 19,
-                "reels": 12,
+                "posts": 24,
+                "reels": 17,
                 "stories": 1,
                 "photos": 6,
-                "impressions": 28114,
-                "likes": 379,
-                "comments": 37,
-                "engagement": 416,
-                "engagementRate": 1.48
+                "impressions": 30854,
+                "likes": 542,
+                "comments": 42,
+                "engagement": 584,
+                "engagementRate": 1.89
               },
               {
                 "name": "@motorevija",
@@ -306,67 +330,67 @@
           "brandsIncluded": [
             "VW"
           ],
-          "posts": 104,
-          "videoPosts": 62,
+          "posts": 137,
+          "videoPosts": 95,
           "photoPosts": 42,
-          "impressions": 274252,
-          "likes": 4752,
-          "comments": 64,
+          "impressions": 462298,
+          "likes": 7592,
+          "comments": 103,
           "report": {
             "contentPreviewUrl": "https://be.epidemic.co/campaigns/38960?share=Fq5vDws2HM6zWDX5Cm4f2E",
-            "summary": "During the reviewed export period, the brand published 104 pieces of Instagram content and generated 274.3k impressions. The strongest readout comes from creator-led posts with measurable engagement, while caption analysis highlights the main promoted models and recurring content themes.",
+            "summary": "During the reviewed export period, the brand published 137 pieces of Instagram content and generated 462.3k impressions. The strongest readout comes from creator-led posts with measurable engagement, while caption analysis highlights the main promoted models and recurring content themes.",
             "formats": [
+              {
+                "type": "Reel",
+                "posts": 57,
+                "share": 42
+              },
               {
                 "type": "Photo",
                 "posts": 42,
-                "share": 40
+                "share": 31
               },
               {
                 "type": "Story",
                 "posts": 38,
-                "share": 37
-              },
-              {
-                "type": "Reel",
-                "posts": 24,
-                "share": 23
+                "share": 28
               }
             ],
             "performance": [
               {
                 "metric": "Impressions",
-                "total": 274252,
-                "average": 2637
+                "total": 462298,
+                "average": 3374
               },
               {
                 "metric": "Likes",
-                "total": 4752,
-                "average": 46
+                "total": 7592,
+                "average": 55
               },
               {
                 "metric": "Comments",
-                "total": 64,
+                "total": 103,
                 "average": 1
               },
               {
                 "metric": "Engagement",
-                "total": 4816,
-                "average": 46
+                "total": 7695,
+                "average": 56
               },
               {
                 "metric": "Engagement rate",
-                "total": 1.76,
-                "average": 1.76,
+                "total": 1.66,
+                "average": 1.66,
                 "suffix": "%"
               }
             ],
             "creatorActivity": {
               "activeCreators": 10,
-              "contentCount": 104,
-              "averagePosts": 10.4,
+              "contentCount": 137,
+              "averagePosts": 13.7,
               "mostActive": {
                 "name": "@volanslo",
-                "posts": 39,
+                "posts": 44,
                 "url": "https://www.instagram.com/volanslo"
               }
             },
@@ -374,41 +398,54 @@
               {
                 "name": "@komotar_minuta",
                 "url": "https://www.instagram.com/komotar_minuta",
-                "posts": 12,
-                "reels": 3,
+                "posts": 16,
+                "reels": 7,
                 "stories": 9,
                 "photos": 0,
-                "impressions": 105010,
-                "likes": 895,
-                "comments": 7,
-                "engagement": 902,
-                "engagementRate": 0.86
+                "impressions": 219622,
+                "likes": 1852,
+                "comments": 15,
+                "engagement": 1867,
+                "engagementRate": 0.85
               },
               {
                 "name": "@volanslo",
                 "url": "https://www.instagram.com/volanslo",
-                "posts": 39,
-                "reels": 5,
+                "posts": 44,
+                "reels": 10,
                 "stories": 15,
                 "photos": 19,
-                "impressions": 64821,
-                "likes": 737,
-                "comments": 26,
-                "engagement": 763,
-                "engagementRate": 1.18
+                "impressions": 74773,
+                "likes": 1105,
+                "comments": 32,
+                "engagement": 1137,
+                "engagementRate": 1.52
               },
               {
                 "name": "@atmosferci",
                 "url": "https://www.instagram.com/atmosferci",
-                "posts": 5,
-                "reels": 2,
+                "posts": 8,
+                "reels": 5,
                 "stories": 3,
                 "photos": 0,
-                "impressions": 33720,
-                "likes": 298,
-                "comments": 3,
-                "engagement": 301,
-                "engagementRate": 0.89
+                "impressions": 67351,
+                "likes": 892,
+                "comments": 8,
+                "engagement": 900,
+                "engagementRate": 1.34
+              },
+              {
+                "name": "@jure_gregorcic",
+                "url": "https://www.instagram.com/jure_gregorcic",
+                "posts": 4,
+                "reels": 2,
+                "stories": 1,
+                "photos": 1,
+                "impressions": 23998,
+                "likes": 781,
+                "comments": 11,
+                "engagement": 792,
+                "engagementRate": 3.3
               },
               {
                 "name": "@tomi_m_siddharta",
@@ -426,54 +463,41 @@
               {
                 "name": "@avtomobilnost.si",
                 "url": "https://www.instagram.com/avtomobilnost.si",
-                "posts": 19,
-                "reels": 11,
+                "posts": 29,
+                "reels": 21,
                 "stories": 1,
                 "photos": 7,
-                "impressions": 15475,
-                "likes": 72,
-                "comments": 3,
-                "engagement": 75,
-                "engagementRate": 0.48
-              },
-              {
-                "name": "@motorevija",
-                "url": "https://www.instagram.com/motorevija",
-                "posts": 10,
-                "reels": 2,
-                "stories": 7,
-                "photos": 1,
-                "impressions": 9926,
-                "likes": 161,
-                "comments": 1,
-                "engagement": 162,
-                "engagementRate": 1.63
+                "impressions": 21444,
+                "likes": 288,
+                "comments": 7,
+                "engagement": 295,
+                "engagementRate": 1.38
               },
               {
                 "name": "@avtomanija",
                 "url": "https://www.instagram.com/avtomanija",
-                "posts": 12,
-                "reels": 1,
+                "posts": 20,
+                "reels": 9,
                 "stories": 2,
                 "photos": 9,
-                "impressions": 9672,
-                "likes": 73,
-                "comments": 6,
-                "engagement": 79,
-                "engagementRate": 0.82
+                "impressions": 17297,
+                "likes": 102,
+                "comments": 9,
+                "engagement": 111,
+                "engagementRate": 0.64
               },
               {
-                "name": "@jure_gregorcic",
-                "url": "https://www.instagram.com/jure_gregorcic",
-                "posts": 2,
-                "reels": 0,
-                "stories": 1,
+                "name": "@motorevija",
+                "url": "https://www.instagram.com/motorevija",
+                "posts": 11,
+                "reels": 3,
+                "stories": 7,
                 "photos": 1,
-                "impressions": 8950,
-                "likes": 185,
-                "comments": 1,
-                "engagement": 186,
-                "engagementRate": 2.08
+                "impressions": 11135,
+                "likes": 241,
+                "comments": 4,
+                "engagement": 245,
+                "engagementRate": 2.2
               },
               {
                 "name": "@lukagregoric",
@@ -507,11 +531,21 @@
                 "label": "Best performing post",
                 "creator": "@komotar_minuta",
                 "primaryLabel": "Impressions",
-                "primaryMetric": "21.6k",
+                "primaryMetric": "28.9k",
                 "secondaryLabel": "Engagement rate",
-                "secondaryMetric": "0.83%",
+                "secondaryMetric": "0.61%",
                 "mediaType": "Reel",
-                "mediaUrl": "https://cdn.epidemic.co/media/reels/src/3823030157234062941.mp4"
+                "mediaUrl": "https://cdn.epidemic.co/media/posts/src/3644463654531414606.mp4",
+                "extraMetrics": [
+                  {
+                    "label": "Likes",
+                    "value": "355"
+                  },
+                  {
+                    "label": "Comments",
+                    "value": "3"
+                  }
+                ]
               },
               {
                 "label": "Best performing story",
@@ -521,67 +555,68 @@
                 "secondaryLabel": "Impression rate",
                 "secondaryMetric": "9.55%",
                 "mediaType": "Story",
-                "mediaUrl": "https://cdn.epidemic.co/media/stories/src/3768797648816627718.jpg"
+                "mediaUrl": "https://cdn.epidemic.co/media/stories/src/3768797648816627718.jpg",
+                "extraMetrics": []
               }
             ],
             "promotedModels": [
               {
                 "model": "General promotion / model unclear",
-                "posts": 64,
-                "impressions": 183266
+                "posts": 80,
+                "impressions": 266427
               },
               {
                 "model": "Volkswagen T-Roc",
-                "posts": 16,
-                "impressions": 30649
+                "posts": 20,
+                "impressions": 64204
               },
               {
                 "model": "Volkswagen Golf",
-                "posts": 11,
-                "impressions": 12756
-              },
-              {
-                "model": "Volkswagen Tayron",
-                "posts": 4,
-                "impressions": 18810
+                "posts": 14,
+                "impressions": 13799
               },
               {
                 "model": "Volkswagen Polo",
-                "posts": 3,
-                "impressions": 3818
+                "posts": 7,
+                "impressions": 41682
+              },
+              {
+                "model": "Volkswagen Tayron",
+                "posts": 6,
+                "impressions": 30643
               },
               {
                 "model": "Volkswagen California",
-                "posts": 2,
-                "impressions": 2201
+                "posts": 4,
+                "impressions": 10787
+              },
+              {
+                "model": "Volkswagen ID. Cross",
+                "posts": 4,
+                "impressions": 31036
               },
               {
                 "model": "Volkswagen ID.4",
                 "posts": 2,
                 "impressions": 3720
-              },
-              {
-                "model": "Volkswagen Tiguan",
-                "posts": 2,
-                "impressions": 3734
               }
             ],
             "themes": [
               {
                 "name": "Lifestyle",
-                "share": 48
+                "share": 44
               },
               {
                 "name": "Product launches",
-                "share": 22
+                "share": 23
               },
               {
                 "name": "Test drives",
-                "share": 16
+                "share": 17
               },
               {
                 "name": "Sustainability",
-                "share": 13
+                "share": 16
               }
             ],
             "community": {
@@ -589,11 +624,10 @@
               "sentiment": "positive",
               "sentimentSummary": "Analysed comments are mostly positive. Positive cues account for 53% of detected sentiment and negative cues for 0%.",
               "positiveExamples": [
-                "takoj bi ga imel🔥🔥🔥",
-                "Super video",
-                "To pa nebo drzalo drugi najbolj prodajen je Skoda octavia, Golf je tretji najbolj prodajen….",
-                "Super video",
-                "vwow😍"
+                {
+                  "text": "To pa nebo drzalo drugi najbolj prodajen je Skoda octavia, Golf je tretji najbolj prodajen….",
+                  "target": "Volkswagen Golf"
+                }
               ],
               "negativeExamples": []
             }
@@ -604,64 +638,64 @@
           "brandsIncluded": [
             "Škoda"
           ],
-          "posts": 21,
-          "videoPosts": 5,
+          "posts": 32,
+          "videoPosts": 16,
           "photoPosts": 16,
-          "impressions": 55047,
-          "likes": 1546,
-          "comments": 26,
+          "impressions": 94216,
+          "likes": 3374,
+          "comments": 52,
           "report": {
             "contentPreviewUrl": "https://be.epidemic.co/campaigns/38958?share=GexvrfTPkzZoWxwpPxbmJb",
-            "summary": "During the reviewed export period, the brand published 21 pieces of Instagram content and generated 55k impressions. The strongest readout comes from creator-led posts with measurable engagement, while caption analysis highlights the main promoted models and recurring content themes.",
+            "summary": "During the reviewed export period, the brand published 32 pieces of Instagram content and generated 94.2k impressions. The strongest readout comes from creator-led posts with measurable engagement, while caption analysis highlights the main promoted models and recurring content themes.",
             "formats": [
               {
                 "type": "Photo",
                 "posts": 16,
-                "share": 76
+                "share": 50
               },
               {
                 "type": "Reel",
-                "posts": 4,
-                "share": 19
+                "posts": 15,
+                "share": 47
               },
               {
                 "type": "Story",
                 "posts": 1,
-                "share": 5
+                "share": 3
               }
             ],
             "performance": [
               {
                 "metric": "Impressions",
-                "total": 55047,
-                "average": 2621
+                "total": 94216,
+                "average": 2944
               },
               {
                 "metric": "Likes",
-                "total": 1546,
-                "average": 74
+                "total": 3374,
+                "average": 105
               },
               {
                 "metric": "Comments",
-                "total": 26,
-                "average": 1
+                "total": 52,
+                "average": 2
               },
               {
                 "metric": "Engagement",
-                "total": 1572,
-                "average": 75
+                "total": 3426,
+                "average": 107
               },
               {
                 "metric": "Engagement rate",
-                "total": 2.86,
-                "average": 2.86,
+                "total": 3.64,
+                "average": 3.64,
                 "suffix": "%"
               }
             ],
             "creatorActivity": {
-              "activeCreators": 8,
-              "contentCount": 21,
-              "averagePosts": 2.6,
+              "activeCreators": 9,
+              "contentCount": 32,
+              "averagePosts": 3.6,
               "mostActive": {
                 "name": "@volanslo",
                 "posts": 11,
@@ -669,6 +703,32 @@
               }
             },
             "creatorBreakdown": [
+              {
+                "name": "@atmosferci",
+                "url": "https://www.instagram.com/atmosferci",
+                "posts": 3,
+                "reels": 3,
+                "stories": 0,
+                "photos": 0,
+                "impressions": 34494,
+                "likes": 573,
+                "comments": 5,
+                "engagement": 578,
+                "engagementRate": 1.68
+              },
+              {
+                "name": "@jerry.o.avtih",
+                "url": "https://www.instagram.com/jerry.o.avtih",
+                "posts": 5,
+                "reels": 4,
+                "stories": 0,
+                "photos": 1,
+                "impressions": 30868,
+                "likes": 2355,
+                "comments": 36,
+                "engagement": 2391,
+                "engagementRate": 7.75
+              },
               {
                 "name": "@volanslo",
                 "url": "https://www.instagram.com/volanslo",
@@ -683,43 +743,43 @@
                 "engagementRate": 1.07
               },
               {
-                "name": "@jerry.o.avtih",
-                "url": "https://www.instagram.com/jerry.o.avtih",
+                "name": "@motorevija",
+                "url": "https://www.instagram.com/motorevija",
+                "posts": 3,
+                "reels": 2,
+                "stories": 0,
+                "photos": 1,
+                "impressions": 3242,
+                "likes": 112,
+                "comments": 5,
+                "engagement": 117,
+                "engagementRate": 3.61
+              },
+              {
+                "name": "@travelernika",
+                "url": "https://www.instagram.com/travelernika",
+                "posts": 2,
+                "reels": 2,
+                "stories": 0,
+                "photos": 0,
+                "impressions": 3012,
+                "likes": 32,
+                "comments": 0,
+                "engagement": 32,
+                "engagementRate": 1.06
+              },
+              {
+                "name": "@avtomobilnost.si",
+                "url": "https://www.instagram.com/avtomobilnost.si",
                 "posts": 2,
                 "reels": 1,
                 "stories": 0,
                 "photos": 1,
-                "impressions": 19822,
-                "likes": 1024,
-                "comments": 17,
-                "engagement": 1041,
-                "engagementRate": 5.25
-              },
-              {
-                "name": "@atmosferci",
-                "url": "https://www.instagram.com/atmosferci",
-                "posts": 1,
-                "reels": 1,
-                "stories": 0,
-                "photos": 0,
-                "impressions": 12294,
-                "likes": 186,
-                "comments": 3,
-                "engagement": 189,
-                "engagementRate": 1.54
-              },
-              {
-                "name": "@motorevija",
-                "url": "https://www.instagram.com/motorevija",
-                "posts": 1,
-                "reels": 0,
-                "stories": 0,
-                "photos": 1,
-                "impressions": 1075,
-                "likes": 37,
+                "impressions": 1376,
+                "likes": 0,
                 "comments": 0,
-                "engagement": 37,
-                "engagementRate": 3.44
+                "engagement": 0,
+                "engagementRate": 0.0
               },
               {
                 "name": "@lukaakranjec",
@@ -735,30 +795,17 @@
                 "engagementRate": 9.82
               },
               {
-                "name": "@avtomobilnost.si",
-                "url": "https://www.instagram.com/avtomobilnost.si",
-                "posts": 1,
-                "reels": 0,
-                "stories": 0,
-                "photos": 1,
-                "impressions": 688,
-                "likes": 0,
-                "comments": 0,
-                "engagement": 0,
-                "engagementRate": 0.0
-              },
-              {
                 "name": "@tehnozvezdje",
                 "url": "https://www.instagram.com/tehnozvezdje",
-                "posts": 2,
-                "reels": 1,
+                "posts": 3,
+                "reels": 2,
                 "stories": 0,
                 "photos": 1,
-                "impressions": 261,
-                "likes": 2,
+                "impressions": 317,
+                "likes": 5,
                 "comments": 0,
-                "engagement": 2,
-                "engagementRate": 0.77
+                "engagement": 5,
+                "engagementRate": 1.58
               },
               {
                 "name": "@avto.finance",
@@ -783,7 +830,17 @@
                 "secondaryLabel": "Engagement rate",
                 "secondaryMetric": "15.12%",
                 "mediaType": "Reel",
-                "mediaUrl": "https://cdn.epidemic.co/media/reels/src/3867883363016049846.mp4"
+                "mediaUrl": "https://cdn.epidemic.co/media/reels/src/3867883363016049846.mp4",
+                "extraMetrics": [
+                  {
+                    "label": "Likes",
+                    "value": "851"
+                  },
+                  {
+                    "label": "Comments",
+                    "value": "13"
+                  }
+                ]
               },
               {
                 "label": "Best performing story",
@@ -793,24 +850,30 @@
                 "secondaryLabel": "Impression rate",
                 "secondaryMetric": "8.68%",
                 "mediaType": "Story",
-                "mediaUrl": "https://cdn.epidemic.co/media/stories/src/3737547069838974347.mp4"
+                "mediaUrl": "https://cdn.epidemic.co/media/stories/src/3737547069838974347.mp4",
+                "extraMetrics": []
               }
             ],
             "promotedModels": [
               {
                 "model": "Škoda Elroq",
-                "posts": 5,
-                "impressions": 15988
+                "posts": 7,
+                "impressions": 17751
               },
               {
                 "model": "Škoda Enyaq",
-                "posts": 5,
-                "impressions": 6402
+                "posts": 7,
+                "impressions": 17412
               },
               {
                 "model": "General promotion / model unclear",
-                "posts": 4,
-                "impressions": 7411
+                "posts": 6,
+                "impressions": 10423
+              },
+              {
+                "model": "Škoda Felicia",
+                "posts": 3,
+                "impressions": 24656
               },
               {
                 "model": "Škoda Karoq",
@@ -819,8 +882,8 @@
               },
               {
                 "model": "Škoda Octavia",
-                "posts": 2,
-                "impressions": 2017
+                "posts": 3,
+                "impressions": 5061
               },
               {
                 "model": "Škoda Kamiq",
@@ -828,32 +891,27 @@
                 "impressions": 3731
               },
               {
-                "model": "Škoda Kodiaq",
-                "posts": 1,
-                "impressions": 2078
-              },
-              {
                 "model": "Škoda Superb",
-                "posts": 1,
-                "impressions": 1904
+                "posts": 2,
+                "impressions": 2996
               }
             ],
             "themes": [
               {
-                "name": "Test drives",
-                "share": 38
-              },
-              {
                 "name": "Product launches",
-                "share": 29
+                "share": 31
               },
               {
                 "name": "Lifestyle",
-                "share": 19
+                "share": 28
+              },
+              {
+                "name": "Test drives",
+                "share": 28
               },
               {
                 "name": "Sustainability",
-                "share": 14
+                "share": 12
               }
             ],
             "community": {
@@ -861,15 +919,12 @@
               "sentiment": "positive",
               "sentimentSummary": "Analysed comments are mostly positive. Positive cues account for 64% of detected sentiment and negative cues for 9%.",
               "positiveExamples": [
-                "Pa tudi, ko pogledaš v vzratno ogledalo ali bočno te vseeno zaslepi, vsaj mene ko kakšen tak avtomobil zapelje za mano. Tako, da nič ne pomaga če on ne osvetli tvojega avtomobila, luči v ogledalih še vedno vidiš in te res oslepijo. Vsaj mene.",
-                "Super video",
-                "Super video",
-                "❤️❤️❤️",
-                "Ciril, pojdi v Peking...boš na lastna ušesa slišal kako \"tiha\" so električna vozila kjer vsi vozniki neprestano pritiskajo oz konstantno drži hudo, saj se vozil ne sliši in se dogajajo nesreče...torej so se \"rešili\" hrupnih fosilnih vozil in dobili zelo \"tihe\" električne...zvočno onesnaženje se jim je povečalo, karbo odtis se pa ni znižal. Prav nič."
+                {
+                  "text": "Pa tudi, ko pogledaš v vzratno ogledalo ali bočno te vseeno zaslepi, vsaj mene ko kakšen tak avtomobil zapelje za mano. Tako, da nič ne pomaga če on ne osvetli tvojega avtomobila, luči v ogledalih še vedno vidiš in te res oslepijo. Vsaj mene.",
+                  "target": "Design / appearance"
+                }
               ],
-              "negativeExamples": [
-                "teli matricni žarometi imajo tudi eno slabo in nevarno lastnost. Ko se namreč nekdo s takimi žarometi pripelje za tabo, ti pa voziš npr. nek oldtimer z relativno šibkim snopom  žarometov (ali pa samo dotrajan xenon, kar ni redkost) se tisti spredaj znajde v svoji senci in ne vidi praktično nič. Kam lahko to pelje pa vemo....."
-              ]
+              "negativeExamples": []
             }
           }
         },
@@ -878,67 +933,67 @@
           "brandsIncluded": [
             "Toyota"
           ],
-          "posts": 119,
-          "videoPosts": 84,
+          "posts": 152,
+          "videoPosts": 117,
           "photoPosts": 35,
-          "impressions": 621737,
-          "likes": 17853,
-          "comments": 264,
+          "impressions": 804309,
+          "likes": 23146,
+          "comments": 397,
           "report": {
             "contentPreviewUrl": "https://be.epidemic.co/campaigns/38959?share=dMvFTGhe2rcfva4vJHUzLp",
-            "summary": "During the reviewed export period, the brand published 119 pieces of Instagram content and generated 621.7k impressions. The strongest readout comes from creator-led posts with measurable engagement, while caption analysis highlights the main promoted models and recurring content themes.",
+            "summary": "During the reviewed export period, the brand published 152 pieces of Instagram content and generated 804.3k impressions. The strongest readout comes from creator-led posts with measurable engagement, while caption analysis highlights the main promoted models and recurring content themes.",
             "formats": [
               {
                 "type": "Story",
                 "posts": 60,
-                "share": 50
+                "share": 39
+              },
+              {
+                "type": "Reel",
+                "posts": 57,
+                "share": 38
               },
               {
                 "type": "Photo",
                 "posts": 35,
-                "share": 29
-              },
-              {
-                "type": "Reel",
-                "posts": 24,
-                "share": 20
+                "share": 23
               }
             ],
             "performance": [
               {
                 "metric": "Impressions",
-                "total": 621737,
-                "average": 5225
+                "total": 804309,
+                "average": 5292
               },
               {
                 "metric": "Likes",
-                "total": 17853,
-                "average": 150
-              },
-              {
-                "metric": "Comments",
-                "total": 264,
-                "average": 2
-              },
-              {
-                "metric": "Engagement",
-                "total": 18117,
+                "total": 23146,
                 "average": 152
               },
               {
+                "metric": "Comments",
+                "total": 397,
+                "average": 3
+              },
+              {
+                "metric": "Engagement",
+                "total": 23543,
+                "average": 155
+              },
+              {
                 "metric": "Engagement rate",
-                "total": 2.91,
-                "average": 2.91,
+                "total": 2.93,
+                "average": 2.93,
                 "suffix": "%"
               }
             ],
             "creatorActivity": {
-              "activeCreators": 14,
-              "contentCount": 119,
-              "averagePosts": 8.5,
+              "activeCreators": 15,
+              "contentCount": 152,
+              "averagePosts": 10.1,
               "mostActive": {
                 "name": "@volanslo",
-                "posts": 40,
+                "posts": 50,
                 "url": "https://www.instagram.com/volanslo"
               }
             },
@@ -946,15 +1001,15 @@
               {
                 "name": "@volanslo",
                 "url": "https://www.instagram.com/volanslo",
-                "posts": 40,
-                "reels": 10,
+                "posts": 50,
+                "reels": 20,
                 "stories": 17,
                 "photos": 13,
-                "impressions": 228970,
-                "likes": 3390,
-                "comments": 99,
-                "engagement": 3489,
-                "engagementRate": 1.52
+                "impressions": 321974,
+                "likes": 6119,
+                "comments": 192,
+                "engagement": 6311,
+                "engagementRate": 1.96
               },
               {
                 "name": "@jure_gregorcic",
@@ -972,54 +1027,54 @@
               {
                 "name": "@komotar_minuta",
                 "url": "https://www.instagram.com/komotar_minuta",
-                "posts": 19,
-                "reels": 0,
+                "posts": 20,
+                "reels": 1,
                 "stories": 19,
                 "photos": 0,
-                "impressions": 106283,
-                "likes": 0,
-                "comments": 0,
-                "engagement": 0,
-                "engagementRate": 0.0
+                "impressions": 134710,
+                "likes": 181,
+                "comments": 5,
+                "engagement": 186,
+                "engagementRate": 0.14
               },
               {
                 "name": "@uros_podlogar_photography",
                 "url": "https://www.instagram.com/uros_podlogar_photography",
-                "posts": 7,
-                "reels": 1,
+                "posts": 10,
+                "reels": 4,
                 "stories": 0,
                 "photos": 6,
-                "impressions": 48818,
-                "likes": 4394,
-                "comments": 78,
-                "engagement": 4472,
-                "engagementRate": 9.16
+                "impressions": 61355,
+                "likes": 5140,
+                "comments": 99,
+                "engagement": 5239,
+                "engagementRate": 8.54
               },
               {
                 "name": "@atmosferci",
                 "url": "https://www.instagram.com/atmosferci",
-                "posts": 4,
-                "reels": 0,
+                "posts": 6,
+                "reels": 2,
                 "stories": 2,
                 "photos": 2,
-                "impressions": 27479,
-                "likes": 659,
-                "comments": 2,
-                "engagement": 661,
-                "engagementRate": 2.41
+                "impressions": 50499,
+                "likes": 1228,
+                "comments": 9,
+                "engagement": 1237,
+                "engagementRate": 2.45
               },
               {
                 "name": "@aljaz_znidarsic",
                 "url": "https://www.instagram.com/aljaz_znidarsic",
-                "posts": 2,
-                "reels": 0,
+                "posts": 3,
+                "reels": 1,
                 "stories": 0,
                 "photos": 2,
-                "impressions": 12235,
-                "likes": 767,
+                "impressions": 17777,
+                "likes": 966,
                 "comments": 16,
-                "engagement": 783,
-                "engagementRate": 6.4
+                "engagement": 982,
+                "engagementRate": 5.52
               },
               {
                 "name": "@jerry.o.avtih",
@@ -1048,56 +1103,69 @@
                 "engagementRate": 1.57
               },
               {
+                "name": "@kostanjsekrok",
+                "url": "https://www.instagram.com/kostanjsekrok",
+                "posts": 1,
+                "reels": 1,
+                "stories": 0,
+                "photos": 0,
+                "impressions": 10646,
+                "likes": 479,
+                "comments": 4,
+                "engagement": 483,
+                "engagementRate": 4.54
+              },
+              {
                 "name": "@gea_college",
                 "url": "https://www.instagram.com/gea_college",
-                "posts": 4,
-                "reels": 3,
+                "posts": 8,
+                "reels": 7,
                 "stories": 1,
                 "photos": 0,
-                "impressions": 5772,
-                "likes": 81,
+                "impressions": 8114,
+                "likes": 236,
                 "comments": 0,
-                "engagement": 81,
-                "engagementRate": 1.4
-              },
-              {
-                "name": "@avtomobilnost.si",
-                "url": "https://www.instagram.com/avtomobilnost.si",
-                "posts": 9,
-                "reels": 4,
-                "stories": 1,
-                "photos": 4,
-                "impressions": 5050,
-                "likes": 83,
-                "comments": 0,
-                "engagement": 83,
-                "engagementRate": 1.64
-              },
-              {
-                "name": "@avtomanija",
-                "url": "https://www.instagram.com/avtomanija",
-                "posts": 8,
-                "reels": 3,
-                "stories": 3,
-                "photos": 2,
-                "impressions": 4184,
-                "likes": 49,
-                "comments": 0,
-                "engagement": 49,
-                "engagementRate": 1.17
+                "engagement": 236,
+                "engagementRate": 2.91
               },
               {
                 "name": "@motorevija",
                 "url": "https://www.instagram.com/motorevija",
-                "posts": 12,
-                "reels": 1,
+                "posts": 15,
+                "reels": 4,
                 "stories": 10,
                 "photos": 1,
-                "impressions": 3880,
-                "likes": 18,
+                "impressions": 7144,
+                "likes": 140,
+                "comments": 3,
+                "engagement": 143,
+                "engagementRate": 2.0
+              },
+              {
+                "name": "@avtomobilnost.si",
+                "url": "https://www.instagram.com/avtomobilnost.si",
+                "posts": 14,
+                "reels": 9,
+                "stories": 1,
+                "photos": 4,
+                "impressions": 6870,
+                "likes": 187,
                 "comments": 0,
-                "engagement": 18,
-                "engagementRate": 0.46
+                "engagement": 187,
+                "engagementRate": 2.72
+              },
+              {
+                "name": "@avtomanija",
+                "url": "https://www.instagram.com/avtomanija",
+                "posts": 11,
+                "reels": 6,
+                "stories": 3,
+                "photos": 2,
+                "impressions": 6154,
+                "likes": 58,
+                "comments": 0,
+                "engagement": 58,
+                "engagementRate": 0.94
               },
               {
                 "name": "@jurelenarcic",
@@ -1135,7 +1203,17 @@
                 "secondaryLabel": "Engagement rate",
                 "secondaryMetric": "44.02%",
                 "mediaType": "Reel",
-                "mediaUrl": "https://cdn.epidemic.co/media/reels/src/3830345671203689920.mp4"
+                "mediaUrl": "https://cdn.epidemic.co/media/reels/src/3830345671203689920.mp4",
+                "extraMetrics": [
+                  {
+                    "label": "Likes",
+                    "value": "1.8k"
+                  },
+                  {
+                    "label": "Comments",
+                    "value": "74"
+                  }
+                ]
               },
               {
                 "label": "Best performing story",
@@ -1145,71 +1223,72 @@
                 "secondaryLabel": "Impression rate",
                 "secondaryMetric": "9.82%",
                 "mediaType": "Story",
-                "mediaUrl": "https://cdn.epidemic.co/media/stories/src/3818419635477967797.jpg"
+                "mediaUrl": "https://cdn.epidemic.co/media/stories/src/3818419635477967797.jpg",
+                "extraMetrics": []
               }
             ],
             "promotedModels": [
               {
                 "model": "General promotion / model unclear",
-                "posts": 81,
-                "impressions": 328851
+                "posts": 94,
+                "impressions": 464424
               },
               {
                 "model": "Toyota Hilux",
-                "posts": 8,
-                "impressions": 53474
+                "posts": 10,
+                "impressions": 60064
               },
               {
                 "model": "Toyota Celica",
-                "posts": 5,
-                "impressions": 31454
-              },
-              {
-                "model": "Toyota Land Cruiser",
-                "posts": 5,
-                "impressions": 148181
+                "posts": 9,
+                "impressions": 39829
               },
               {
                 "model": "Toyota Mirai",
-                "posts": 4,
-                "impressions": 18901
+                "posts": 8,
+                "impressions": 33540
+              },
+              {
+                "model": "Toyota Land Cruiser",
+                "posts": 7,
+                "impressions": 150212
               },
               {
                 "model": "Toyota C-HR",
-                "posts": 4,
-                "impressions": 25965
+                "posts": 6,
+                "impressions": 26787
               },
               {
-                "model": "Toyota bZ4X",
-                "posts": 3,
-                "impressions": 2539
+                "model": "Toyota Yaris",
+                "posts": 4,
+                "impressions": 13803
               },
               {
                 "model": "Toyota RAV4",
-                "posts": 3,
-                "impressions": 3540
+                "posts": 4,
+                "impressions": 3620
               }
             ],
             "themes": [
               {
                 "name": "Lifestyle",
-                "share": 61
+                "share": 53
               },
               {
                 "name": "Test drives",
                 "share": 17
               },
               {
-                "name": "Sustainability",
-                "share": 11
+                "name": "Product launches",
+                "share": 14
               },
               {
-                "name": "Product launches",
-                "share": 9
+                "name": "Sustainability",
+                "share": 14
               },
               {
                 "name": "Brand storytelling",
-                "share": 3
+                "share": 2
               }
             ],
             "community": {
@@ -1217,15 +1296,16 @@
               "sentiment": "positive",
               "sentimentSummary": "Analysed comments are mostly positive. Positive cues account for 52% of detected sentiment and negative cues for 3%.",
               "positiveExamples": [
-                "🔥",
-                "Super video",
-                "❤️❤️😍😍👏👏",
-                "Super video",
-                "Šampione👏🔥🙏🙏"
+                {
+                  "text": "Dobila za darilo od moža, super avto, uživam v njemu že kakšen mesec. Baje da sem prva v Sloveniji ki ga je dobila 🥰",
+                  "target": "Vehicle / model"
+                }
               ],
               "negativeExamples": [
-                "Ljudje se ne zavedajo, koliko je zahtevno shranjevati in pretakati tekoči vodik, še NASA ima probleme z vodikom. Dejstvo, da jim je ratalo spravit vse to v format normalne pumpe je mindblowing.",
-                "Žal ne bo nikoli v uporabi. Zabloda tehnologije kar se avtomobilov tiče.  Se lahko pospravi."
+                {
+                  "text": "Žal ne bo nikoli v uporabi. Zabloda tehnologije kar se avtomobilov tiče.  Se lahko pospravi.",
+                  "target": "Vehicle / model"
+                }
               ]
             }
           }
@@ -1235,67 +1315,67 @@
           "brandsIncluded": [
             "Peugeot"
           ],
-          "posts": 57,
-          "videoPosts": 29,
+          "posts": 69,
+          "videoPosts": 41,
           "photoPosts": 28,
-          "impressions": 449056,
-          "likes": 4762,
-          "comments": 88,
+          "impressions": 535307,
+          "likes": 6554,
+          "comments": 136,
           "report": {
             "contentPreviewUrl": "https://be.epidemic.co/campaigns/38957?share=BqTa5sjbAdBdCH8Y6hJNL4",
-            "summary": "During the reviewed export period, the brand published 57 pieces of Instagram content and generated 449.1k impressions. The strongest readout comes from creator-led posts with measurable engagement, while caption analysis highlights the main promoted models and recurring content themes.",
+            "summary": "During the reviewed export period, the brand published 69 pieces of Instagram content and generated 535.3k impressions. The strongest readout comes from creator-led posts with measurable engagement, while caption analysis highlights the main promoted models and recurring content themes.",
             "formats": [
               {
                 "type": "Photo",
                 "posts": 28,
-                "share": 49
+                "share": 41
+              },
+              {
+                "type": "Reel",
+                "posts": 24,
+                "share": 35
               },
               {
                 "type": "Story",
                 "posts": 17,
-                "share": 30
-              },
-              {
-                "type": "Reel",
-                "posts": 12,
-                "share": 21
+                "share": 25
               }
             ],
             "performance": [
               {
                 "metric": "Impressions",
-                "total": 449056,
-                "average": 7878
+                "total": 535307,
+                "average": 7758
               },
               {
                 "metric": "Likes",
-                "total": 4762,
-                "average": 84
+                "total": 6554,
+                "average": 95
               },
               {
                 "metric": "Comments",
-                "total": 88,
+                "total": 136,
                 "average": 2
               },
               {
                 "metric": "Engagement",
-                "total": 4850,
-                "average": 85
+                "total": 6690,
+                "average": 97
               },
               {
                 "metric": "Engagement rate",
-                "total": 1.08,
-                "average": 1.08,
+                "total": 1.25,
+                "average": 1.25,
                 "suffix": "%"
               }
             ],
             "creatorActivity": {
               "activeCreators": 11,
-              "contentCount": 57,
-              "averagePosts": 5.2,
+              "contentCount": 69,
+              "averagePosts": 6.3,
               "mostActive": {
                 "name": "@yummyavanture",
-                "posts": 16,
+                "posts": 21,
                 "url": "https://www.instagram.com/yummyavanture"
               }
             },
@@ -1303,28 +1383,28 @@
               {
                 "name": "@lara_tosic",
                 "url": "https://www.instagram.com/lara_tosic",
-                "posts": 4,
-                "reels": 3,
+                "posts": 5,
+                "reels": 4,
                 "stories": 0,
                 "photos": 1,
-                "impressions": 176794,
+                "impressions": 193408,
                 "likes": 2741,
-                "comments": 38,
-                "engagement": 2779,
-                "engagementRate": 1.57
+                "comments": 65,
+                "engagement": 2806,
+                "engagementRate": 1.45
               },
               {
                 "name": "@yummyavanture",
                 "url": "https://www.instagram.com/yummyavanture",
-                "posts": 16,
-                "reels": 3,
+                "posts": 21,
+                "reels": 8,
                 "stories": 13,
                 "photos": 0,
-                "impressions": 118920,
-                "likes": 909,
-                "comments": 25,
-                "engagement": 934,
-                "engagementRate": 0.79
+                "impressions": 174056,
+                "likes": 1917,
+                "comments": 35,
+                "engagement": 1952,
+                "engagementRate": 1.12
               },
               {
                 "name": "@casnik_delo",
@@ -1342,15 +1422,15 @@
               {
                 "name": "@avtotehnavis",
                 "url": "https://www.instagram.com/avtotehnavis",
-                "posts": 12,
-                "reels": 4,
+                "posts": 15,
+                "reels": 7,
                 "stories": 2,
                 "photos": 6,
-                "impressions": 46483,
-                "likes": 169,
-                "comments": 4,
-                "engagement": 173,
-                "engagementRate": 0.37
+                "impressions": 50671,
+                "likes": 281,
+                "comments": 7,
+                "engagement": 288,
+                "engagementRate": 0.57
               },
               {
                 "name": "@atmosferci",
@@ -1366,6 +1446,19 @@
                 "engagementRate": 1.52
               },
               {
+                "name": "@ach_volley",
+                "url": "https://www.instagram.com/ach_volley",
+                "posts": 3,
+                "reels": 2,
+                "stories": 1,
+                "photos": 0,
+                "impressions": 10837,
+                "likes": 672,
+                "comments": 8,
+                "engagement": 680,
+                "engagementRate": 6.27
+              },
+              {
                 "name": "@volanslo",
                 "url": "https://www.instagram.com/volanslo",
                 "posts": 4,
@@ -1379,6 +1472,19 @@
                 "engagementRate": 0.96
               },
               {
+                "name": "@avtomobilnost.si",
+                "url": "https://www.instagram.com/avtomobilnost.si",
+                "posts": 6,
+                "reels": 1,
+                "stories": 0,
+                "photos": 5,
+                "impressions": 4165,
+                "likes": 65,
+                "comments": 0,
+                "engagement": 65,
+                "engagementRate": 1.56
+              },
+              {
                 "name": "@avtomanija",
                 "url": "https://www.instagram.com/avtomanija",
                 "posts": 5,
@@ -1390,19 +1496,6 @@
                 "comments": 0,
                 "engagement": 22,
                 "engagementRate": 0.55
-              },
-              {
-                "name": "@avtomobilnost.si",
-                "url": "https://www.instagram.com/avtomobilnost.si",
-                "posts": 5,
-                "reels": 0,
-                "stories": 0,
-                "photos": 5,
-                "impressions": 3477,
-                "likes": 65,
-                "comments": 0,
-                "engagement": 65,
-                "engagementRate": 1.87
               },
               {
                 "name": "@lukagregoric",
@@ -1429,19 +1522,6 @@
                 "comments": 1,
                 "engagement": 1,
                 "engagementRate": 0.08
-              },
-              {
-                "name": "@ach_volley",
-                "url": "https://www.instagram.com/ach_volley",
-                "posts": 1,
-                "reels": 0,
-                "stories": 1,
-                "photos": 0,
-                "impressions": 1212,
-                "likes": 0,
-                "comments": 0,
-                "engagement": 0,
-                "engagementRate": 0.0
               }
             ],
             "bestContent": [
@@ -1453,7 +1533,17 @@
                 "secondaryLabel": "Engagement rate",
                 "secondaryMetric": "3.97%",
                 "mediaType": "Reel",
-                "mediaUrl": "https://cdn.epidemic.co/media/reels/src/3788301475244755882.mp4"
+                "mediaUrl": "https://cdn.epidemic.co/media/reels/src/3788301475244755882.mp4",
+                "extraMetrics": [
+                  {
+                    "label": "Likes",
+                    "value": "1k"
+                  },
+                  {
+                    "label": "Comments",
+                    "value": "15"
+                  }
+                ]
               },
               {
                 "label": "Best performing story",
@@ -1463,39 +1553,40 @@
                 "secondaryLabel": "Impression rate",
                 "secondaryMetric": "14.68%",
                 "mediaType": "Story",
-                "mediaUrl": "https://cdn.epidemic.co/media/stories/src/3728174651630158678.jpg"
+                "mediaUrl": "https://cdn.epidemic.co/media/stories/src/3728174651630158678.jpg",
+                "extraMetrics": []
               }
             ],
             "promotedModels": [
               {
                 "model": "General promotion / model unclear",
-                "posts": 38,
-                "impressions": 315772
+                "posts": 43,
+                "impressions": 354351
               },
               {
                 "model": "Peugeot 2008",
-                "posts": 5,
-                "impressions": 45768
+                "posts": 6,
+                "impressions": 47075
               },
               {
                 "model": "Peugeot 3008",
-                "posts": 4,
-                "impressions": 11949
+                "posts": 6,
+                "impressions": 23820
               },
               {
                 "model": "Peugeot 5008",
-                "posts": 4,
-                "impressions": 18657
-              },
-              {
-                "model": "Peugeot 208",
-                "posts": 2,
-                "impressions": 1376
+                "posts": 6,
+                "impressions": 20686
               },
               {
                 "model": "Peugeot 408",
-                "posts": 2,
-                "impressions": 30011
+                "posts": 4,
+                "impressions": 52031
+              },
+              {
+                "model": "Peugeot 208",
+                "posts": 3,
+                "impressions": 12509
               },
               {
                 "model": "Peugeot 205",
@@ -1511,35 +1602,30 @@
             "themes": [
               {
                 "name": "Lifestyle",
-                "share": 51
+                "share": 55
               },
               {
                 "name": "Sustainability",
-                "share": 12
+                "share": 13
               },
               {
                 "name": "Test drives",
-                "share": 12
+                "share": 10
               },
               {
                 "name": "Brand storytelling",
-                "share": 9
+                "share": 7
               },
               {
                 "name": "Product launches",
-                "share": 9
+                "share": 7
               }
             ],
             "community": {
               "commentsAnalysed": 13,
               "sentiment": "positive",
               "sentimentSummary": "Analysed comments are mostly positive. Positive cues account for 31% of detected sentiment and negative cues for 0%.",
-              "positiveExamples": [
-                "Hudooo 😍😍😍",
-                "😍🔥",
-                "Super",
-                "Super"
-              ],
+              "positiveExamples": [],
               "negativeExamples": []
             }
           }
@@ -1547,11 +1633,11 @@
       ],
       "dataCleaning": {
         "feedPostReelDuplicatesRemoved": {
-          "GA Adriatic": 32,
-          "Volkswagen Slovenija": 41,
-          "Škoda Slovenija": 12,
-          "Toyota Slovenija": 39,
-          "Peugeot Slovenija": 16
+          "GA Adriatic": 8,
+          "Volkswagen Slovenija": 8,
+          "Škoda Slovenija": 1,
+          "Toyota Slovenija": 6,
+          "Peugeot Slovenija": 4
         }
       }
     }
