@@ -1,6 +1,5 @@
 const dataUrl = "./data/report-data.json";
 const authStorageKey = "automoto-report-auth";
-const mediaStorageKey = "automoto-report-media-urls";
 const authStorage = window.localStorage;
 const saveStatusDuration = 2400;
 const defaultPasswords = {
@@ -119,7 +118,6 @@ async function loadReport() {
   }
 
   state.data = await response.json();
-  applyStoredMediaUrls();
   state.activePeriodId = state.data.activePeriodId || state.data.periods[0]?.id;
 }
 
@@ -127,7 +125,10 @@ function restoreStoredAuth() {
   try {
     const storedAuth = JSON.parse(authStorage.getItem(authStorageKey) || "null");
     if (storedAuth?.role === "admin" || storedAuth?.role === "viewer") {
-      state.auth = storedAuth;
+      state.auth = {
+        role: storedAuth.role,
+        serverBacked: false
+      };
     }
   } catch {
     clearStoredAuth();
@@ -136,7 +137,9 @@ function restoreStoredAuth() {
 
 async function restoreServerAuth() {
   try {
-    const response = await fetch("./api/session");
+    const response = await fetch("./api/session", {
+      credentials: "same-origin"
+    });
     if (!response.ok) return;
 
     const auth = await response.json();
@@ -166,7 +169,7 @@ async function handleLogin(event) {
       showAuthError("Napačno geslo.");
       return;
     }
-    setAuth({ role });
+    setAuth({ role, serverBacked: false });
   }
 
   nodes.passwordInput.value = "";
@@ -187,6 +190,7 @@ async function loginWithServer(password) {
   const response = await fetch("./api/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
     body: JSON.stringify({ password })
   });
 
@@ -214,7 +218,8 @@ function roleForPassword(password) {
 
 function setAuth(auth) {
   state.auth = {
-    role: auth.role
+    role: auth.role,
+    serverBacked: auth.serverBacked !== false
   };
   authStorage.setItem(authStorageKey, JSON.stringify(state.auth));
 }
@@ -225,7 +230,10 @@ async function handleLogout() {
   clearStoredAuth();
 
   try {
-    await fetch("./api/logout", { method: "POST" });
+    await fetch("./api/logout", {
+      method: "POST",
+      credentials: "same-origin"
+    });
   } catch {
     // Static hosting fallback has no logout endpoint.
   }
@@ -239,6 +247,10 @@ function clearStoredAuth() {
 
 function isAdmin() {
   return state.auth?.role === "admin";
+}
+
+function canSaveReport() {
+  return isAdmin() && state.auth?.serverBacked !== false;
 }
 
 function unlockReport() {
@@ -783,7 +795,7 @@ function renderBestContent(item, brandIndex, contentIndex) {
           <div><dt>Primary</dt><dd>${escapeHtml(item.primaryMetric)}</dd></div>
           <div><dt>Secondary</dt><dd>${escapeHtml(item.secondaryMetric)}</dd></div>
         </dl>
-        ${isAdmin() ? renderBestContentEditor(item, brandIndex, contentIndex) : ""}
+        ${canSaveReport() ? renderBestContentEditor(item, brandIndex, contentIndex) : ""}
       </div>
     </div>
   `;
@@ -823,7 +835,7 @@ function renderBestContentEditor(item, brandIndex, contentIndex) {
 
 function handleBestContentInput(event) {
   const input = event.target.closest("[data-media-field]");
-  if (!input || !isAdmin()) return;
+  if (!input || !canSaveReport()) return;
 
   const brandIndex = Number(input.dataset.brandIndex);
   const contentIndex = Number(input.dataset.contentIndex);
@@ -832,7 +844,6 @@ function handleBestContentInput(event) {
   if (!item || (field !== "imageUrl" && field !== "videoUrl")) return;
 
   item[field] = input.value.trim();
-  storeMediaUrlOverride(brandIndex, contentIndex, field, item[field]);
   updateBestContentMedia(brandIndex, contentIndex, item);
   showSaveStatus(brandIndex, contentIndex, "Saving...");
   scheduleReportSave(brandIndex, contentIndex);
@@ -857,84 +868,6 @@ function ensureBestContent(brand) {
   const photoPosts = toNumber(brand.photoPosts || brand.staticPosts || brand.posts);
   brand.report.bestContent = buildBrandReport(brand, { totalEngagement, videoPosts, photoPosts }).bestContent;
   return brand.report.bestContent;
-}
-
-function storeMediaUrlOverride(brandIndex, contentIndex, field, value) {
-  const period = getActivePeriod();
-  if (!period?.id || (field !== "imageUrl" && field !== "videoUrl")) return;
-
-  const overrides = readStoredMediaUrls();
-  overrides[period.id] = overrides[period.id] || {};
-  overrides[period.id][brandIndex] = overrides[period.id][brandIndex] || {};
-  overrides[period.id][brandIndex][contentIndex] = overrides[period.id][brandIndex][contentIndex] || {};
-  overrides[period.id][brandIndex][contentIndex][field] = value;
-
-  try {
-    authStorage.setItem(mediaStorageKey, JSON.stringify(overrides));
-  } catch {
-    // The server save path still handles persistence when browser storage is unavailable.
-  }
-}
-
-function clearStoredMediaUrlOverride(brandIndex, contentIndex) {
-  const period = getActivePeriod();
-  if (!period?.id) return;
-
-  const overrides = readStoredMediaUrls();
-  if (!overrides[period.id]?.[brandIndex]?.[contentIndex]) return;
-
-  delete overrides[period.id][brandIndex][contentIndex];
-
-  if (!Object.keys(overrides[period.id][brandIndex]).length) {
-    delete overrides[period.id][brandIndex];
-  }
-  if (!Object.keys(overrides[period.id]).length) {
-    delete overrides[period.id];
-  }
-
-  try {
-    authStorage.setItem(mediaStorageKey, JSON.stringify(overrides));
-  } catch {
-    // Nothing else to do; stale fallback data is preferable to losing an unsaved URL.
-  }
-}
-
-function applyStoredMediaUrls() {
-  const overrides = readStoredMediaUrls();
-  if (!state.data?.periods?.length) return;
-
-  state.data.periods.forEach((period) => {
-    const periodOverrides = overrides[period.id];
-    if (!periodOverrides) return;
-
-    getBrands(period).forEach((brand, brandIndex) => {
-      const brandOverrides = periodOverrides[brandIndex];
-      if (!brandOverrides) return;
-
-      const bestContent = ensureBestContent(brand);
-      Object.entries(brandOverrides).forEach(([contentIndex, values]) => {
-        const item = bestContent[Number(contentIndex)];
-        if (!item || !values) return;
-
-        if (Object.prototype.hasOwnProperty.call(values, "imageUrl")) {
-          item.imageUrl = values.imageUrl;
-        }
-        if (Object.prototype.hasOwnProperty.call(values, "videoUrl")) {
-          item.videoUrl = values.videoUrl;
-        }
-      });
-    });
-  });
-}
-
-function readStoredMediaUrls() {
-  try {
-    const stored = JSON.parse(authStorage.getItem(mediaStorageKey) || "{}");
-    return stored && typeof stored === "object" ? stored : {};
-  } catch {
-    authStorage.removeItem(mediaStorageKey);
-    return {};
-  }
 }
 
 function updateBestContentMedia(brandIndex, contentIndex, item) {
@@ -1009,18 +942,22 @@ function scheduleReportSave(brandIndex, contentIndex) {
   state.saveTimer = window.setTimeout(async () => {
     try {
       await saveReportData();
-      clearStoredMediaUrlOverride(brandIndex, contentIndex);
       showSaveStatus(brandIndex, contentIndex, "Saved");
     } catch {
-      showSaveStatus(brandIndex, contentIndex, "Saved locally");
+      showSaveStatus(brandIndex, contentIndex, "Server save failed");
     }
   }, 550);
 }
 
 async function saveReportData() {
+  if (!canSaveReport()) {
+    throw new Error("Server-backed admin session is required.");
+  }
+
   const response = await fetch("./api/report-data", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
     body: JSON.stringify(state.data)
   });
 
