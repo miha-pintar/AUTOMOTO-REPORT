@@ -18,6 +18,10 @@ const state = {
   auth: null,
   activePeriodId: null,
   activeTab: "overview",
+  comparison: {
+    enabled: false,
+    brandName: ""
+  },
   typeChart: null,
   heroMiniChart: null,
   brandFormatChart: null,
@@ -35,6 +39,9 @@ const nodes = {
   authError: document.querySelector("#authError"),
   reportShell: document.querySelector("#reportShell"),
   accessBadge: document.querySelector("#accessBadge"),
+  compareControls: document.querySelector("#compareControls"),
+  compareToggle: document.querySelector("#compareToggle"),
+  compareBrandSelect: document.querySelector("#compareBrandSelect"),
   shareButton: document.querySelector("#shareButton"),
   logoutButton: document.querySelector("#logoutButton"),
   periodSelect: document.querySelector("#periodSelect"),
@@ -66,6 +73,8 @@ async function init() {
   nodes.authForm.addEventListener("submit", handleLogin);
   nodes.shareButton.addEventListener("click", handleShareReport);
   nodes.logoutButton.addEventListener("click", handleLogout);
+  nodes.compareToggle?.addEventListener("change", handleComparisonToggle);
+  nodes.compareBrandSelect?.addEventListener("change", handleComparisonBrandChange);
   restoreStoredAuth();
   await restoreServerAuth();
 
@@ -331,9 +340,11 @@ function unlockReport() {
   nodes.reportShell.removeAttribute("aria-hidden");
   nodes.authGate.setAttribute("hidden", "");
   nodes.accessBadge.textContent = isAdmin() ? "Admin mode" : "View only";
+  nodes.compareControls?.classList.toggle("is-hidden", !isAdmin());
   nodes.shareButton.classList.toggle("is-hidden", !isAdmin());
   nodes.shareButton.disabled = !isAdmin();
   nodes.fileInput?.closest(".file-button")?.classList.toggle("is-hidden", !isAdmin());
+  syncComparisonControls();
 }
 
 function lockReport() {
@@ -342,10 +353,14 @@ function lockReport() {
   nodes.reportShell.setAttribute("aria-hidden", "true");
   nodes.authGate.removeAttribute("hidden");
   nodes.accessBadge.textContent = "";
+  state.comparison.enabled = false;
+  state.comparison.brandName = "";
+  nodes.compareControls?.classList.add("is-hidden");
   nodes.shareButton.classList.add("is-hidden");
   nodes.shareButton.disabled = true;
   nodes.shareButton.textContent = "Share report";
   nodes.fileInput?.closest(".file-button")?.classList.add("is-hidden");
+  syncComparisonControls();
   nodes.passwordInput.focus();
 }
 
@@ -376,6 +391,8 @@ function render() {
   nodes.marketLabel.textContent = period.market || "Market not set";
   nodes.brandLabel.textContent = `Brands: ${reviewedBrands.join(", ")}`;
   nodes.contentCount.innerHTML = `<strong>${formatNumber.format(totals.posts)}</strong> pieces of content were created.`;
+  syncComparisonBrandOptions(brands);
+  syncComparisonControls();
 
   if (nodes.periodSelect) {
     nodes.periodSelect.innerHTML = state.data.periods
@@ -550,6 +567,8 @@ function renderBrandPanel(brands) {
   const videoPosts = toNumber(brand.videoPosts || brand.reels);
   const photoPosts = toNumber(brand.photoPosts || brand.staticPosts || brand.posts);
   const report = buildBrandReport(brand, { totalEngagement, videoPosts, photoPosts });
+  const comparisonBrand = getComparisonBrand(brands, brand);
+  const brandCompare = buildBrandComparison(brand, report, comparisonBrand);
 
   nodes.brandPanel.innerHTML = `
     <section class="section section--brand-detail" aria-labelledby="brandDetailTitle">
@@ -568,10 +587,10 @@ function renderBrandPanel(brands) {
       </div>
 
       <div class="brand-detail__metrics">
-        ${renderMetric("Posts", formatNumber.format(toNumber(brand.posts)), "Published content")}
-        ${renderMetric("Impressions", compactNumber(brand.impressions), "Total reach signal")}
-        ${renderMetric("Engagement", compactNumber(totalEngagement), "Likes and comments")}
-        ${renderMetric("ER", `${formatPercent(engagementRate(brand))}%`, "Engagement rate")}
+        ${renderMetric("Posts", formatNumber.format(toNumber(brand.posts)), "Published content", brandCompare.posts)}
+        ${renderMetric("Impressions", compactNumber(brand.impressions), "Total reach signal", brandCompare.impressions)}
+        ${renderMetric("Engagement", compactNumber(totalEngagement), "Likes and comments", brandCompare.engagement)}
+        ${renderMetric("ER", `${formatPercent(engagementRate(brand))}%`, "Engagement rate", brandCompare.engagementRate)}
       </div>
 
       <div class="brand-report-grid">
@@ -581,7 +600,7 @@ function renderBrandPanel(brands) {
             <p>Format split for the selected period.</p>
           </div>
           <div class="format-layout">
-            ${renderFormatTable(report.formats)}
+            ${renderFormatTable(report.formats, brandCompare.formats)}
             <div class="report-chart-stack">
               ${renderChartCanvas("brandFormatChart", "Format split")}
               ${renderLegend(report.formats, { labelKey: "type", colors: formatColors, variant: "compact", showValue: false })}
@@ -594,18 +613,19 @@ function renderBrandPanel(brands) {
             <h3>Performance</h3>
             <p>Total value and average value per post.</p>
           </div>
-          ${renderPerformanceTable(report.performance)}
+          ${renderPerformanceTable(report.performance, brandCompare.performance)}
         </article>
 
         <article class="brand-report-block">
           <div>
             <h3>Creator activity</h3>
-            <p>${escapeHtml(report.creatorActivity.activeCreators)} profilov je za to znamko naredilo ${formatNumber.format(
+            <p>${escapeHtml(report.creatorActivity.activeCreators)} creators published ${formatNumber.format(
               toNumber(report.creatorActivity.contentCount)
-            )} vsebin.</p>
+            )} pieces of content for this brand.</p>
           </div>
           <dl class="creator-list">
-            <div><dt>Average content per profile</dt><dd>${escapeHtml(report.creatorActivity.averagePosts)} posts</dd></div>
+            <div><dt>Average content per creator</dt><dd>${renderMetricValueWithComparison(`${escapeHtml(report.creatorActivity.averagePosts)} pieces`, brandCompare.creatorActivity.averagePosts, { compact: true })}</dd></div>
+            <div><dt>Average posts per creator</dt><dd>${renderMetricValueWithComparison(`${escapeHtml(report.creatorActivity.averagePostsPerCreator)} posts`, brandCompare.creatorActivity.averagePostsPerCreator, { compact: true })}</dd></div>
             <div>
               <dt>Most active creator</dt>
               <dd>
@@ -616,7 +636,7 @@ function renderBrandPanel(brands) {
                       )}</a>`
                     : escapeHtml(report.creatorActivity.mostActive.name)
                 }
-                <span>${formatNumber.format(toNumber(report.creatorActivity.mostActive.posts))} posts</span>
+                <span>${renderMetricValueWithComparison(`${formatNumber.format(toNumber(report.creatorActivity.mostActive.posts))} posts`, brandCompare.creatorActivity.mostActivePosts, { compact: true })}</span>
               </dd>
             </div>
           </dl>
@@ -674,8 +694,8 @@ function renderBrandPanel(brands) {
 
         <article class="brand-report-block brand-report-block--wide">
           <div>
-            <h3>Creator / profile breakdown</h3>
-            <p>Publishing mix and performance by profile for this brand.</p>
+            <h3>Creator breakdown</h3>
+            <p>Publishing mix and performance by creator for this brand.</p>
           </div>
           ${renderCreatorBreakdownTable(report.creatorBreakdown)}
         </article>
@@ -686,11 +706,11 @@ function renderBrandPanel(brands) {
   renderBrandDoughnutCharts(report);
 }
 
-function renderMetric(label, value, description) {
+function renderMetric(label, value, description, comparison) {
   return `
     <article class="kpi">
       <span>${escapeHtml(label)}</span>
-      <strong>${escapeHtml(value)}</strong>
+      <strong class="metric-emphasis">${renderMetricValueWithComparison(escapeHtml(value), comparison, { compact: false })}</strong>
       <small>${escapeHtml(description)}</small>
     </article>
   `;
@@ -701,6 +721,7 @@ function buildBrandReport(brand, metrics) {
   const posts = toNumber(brand.posts);
   const videoPosts = toNumber(metrics.videoPosts);
   const photoPosts = toNumber(metrics.photoPosts);
+  const creatorBreakdown = buildCreatorBreakdown(report);
   const formatFallback = [
     { type: "Video", posts: videoPosts, share: percentShare(videoPosts, posts) },
     { type: "Photo", posts: photoPosts, share: percentShare(photoPosts, posts) }
@@ -726,13 +747,16 @@ function buildBrandReport(brand, metrics) {
       activeCreators: report.creatorActivity?.activeCreators || "Source needed",
       contentCount: report.creatorActivity?.contentCount || brand.posts || 0,
       averagePosts: report.creatorActivity?.averagePosts || "Source needed",
+      averagePostsPerCreator:
+        report.creatorActivity?.averagePostsPerCreator ??
+        calculateAveragePostsPerCreator(creatorBreakdown, report.formats, report.creatorActivity?.activeCreators),
       mostActive: report.creatorActivity?.mostActive || {
         name: "Source needed",
         posts: 0,
         url: ""
       }
     },
-    creatorBreakdown: buildCreatorBreakdown(report),
+    creatorBreakdown,
     bestContent: report.bestContent || [
       { label: "Best performing video", creator: "Source needed", primaryMetric: "-", secondaryMetric: "-", mediaType: "Video" },
       { label: "Best performing photo", creator: "Source needed", primaryMetric: "-", secondaryMetric: "-", mediaType: "Photo" }
@@ -752,6 +776,29 @@ function buildBrandReport(brand, metrics) {
   };
 }
 
+function calculateAveragePostsPerCreator(rows, formats, activeCreators) {
+  const creatorCount = toNumber(activeCreators) || rows.length;
+  if (!creatorCount) return "Source needed";
+
+  const breakdownPosts = rows.reduce((sum, row) => sum + toNumber(row.reels) + toNumber(row.photos), 0);
+  if (breakdownPosts > 0 || rows.length) return roundToSingleDecimal(breakdownPosts / creatorCount);
+
+  const formatPosts = (Array.isArray(formats) ? formats : []).reduce((sum, item) => {
+    const type = String(item.type || item.name || "").toLowerCase();
+    if (type === "reel" || type === "reels" || type === "post" || type === "posts" || type === "photo" || type === "photos") {
+      return sum + toNumber(item.posts);
+    }
+    return sum;
+  }, 0);
+
+  if (formatPosts > 0) return roundToSingleDecimal(formatPosts / creatorCount);
+  return "Source needed";
+}
+
+function roundToSingleDecimal(value) {
+  return Math.round(value * 10) / 10;
+}
+
 function buildCommunityFeedback(report, brand) {
   const community = report.community || {};
   const rawSentiment = community.sentiment ?? report.commentSentiment ?? brand.commentSentiment ?? "";
@@ -769,7 +816,7 @@ function buildCommunityFeedback(report, brand) {
   };
 }
 
-function renderFormatTable(formats) {
+function renderFormatTable(formats, comparisons = new Map()) {
   const totalPosts = formats.reduce((sum, item) => sum + toNumber(item.posts), 0);
   return `
     <div class="mini-table">
@@ -779,7 +826,7 @@ function renderFormatTable(formats) {
           (item) => `
             <div class="mini-table__row">
               <span>${escapeHtml(item.type || item.name)}</span>
-              <strong>${formatNumber.format(toNumber(item.posts))}</strong>
+              <strong>${renderMetricValueWithComparison(formatNumber.format(toNumber(item.posts)), comparisons.get(normalizeMetricKey(item.type || item.name)))}</strong>
               <span>${formatPercent(item.share ?? percentShare(item.posts, totalPosts))}%</span>
             </div>
           `
@@ -787,7 +834,7 @@ function renderFormatTable(formats) {
         .join("")}
       <div class="mini-table__row mini-table__row--total">
         <span>Total</span>
-        <strong>${formatNumber.format(totalPosts)}</strong>
+        <strong>${renderMetricValueWithComparison(formatNumber.format(totalPosts), comparisons.get("total"))}</strong>
         <span>100%</span>
       </div>
     </div>
@@ -806,7 +853,7 @@ function renderCreatorBreakdownTable(rows) {
       <table>
         <thead>
           <tr>
-            <th>Creator / profile</th>
+            <th>Creator</th>
             <th>Total posts</th>
             <th>Reels</th>
             <th>Stories</th>
@@ -822,7 +869,7 @@ function renderCreatorBreakdownTable(rows) {
           ${
             rows.length
               ? rows.map(renderCreatorBreakdownRow).join("")
-              : `<tr><td class="profile-table__empty" colspan="10">Profile-level source data is needed for this brand.</td></tr>`
+              : `<tr><td class="profile-table__empty" colspan="10">Creator-level source data is needed for this brand.</td></tr>`
           }
         </tbody>
       </table>
@@ -859,7 +906,7 @@ function renderCreatorBreakdownRow(row) {
   `;
 }
 
-function renderPerformanceTable(rows) {
+function renderPerformanceTable(rows, comparisons = new Map()) {
   return `
     <div class="mini-table mini-table--performance">
       <div class="mini-table__head"><span>Metric</span><span>Total value</span><span>Avg. value per post</span></div>
@@ -868,14 +915,202 @@ function renderPerformanceTable(rows) {
           (row) => `
             <div class="mini-table__row">
               <span>${escapeHtml(row.metric)}</span>
-              <strong>${formatReportValue(row.total, row.suffix)}</strong>
-              <span>${formatReportValue(row.average, row.suffix)}</span>
+              <strong>${renderMetricValueWithComparison(formatReportValue(row.total, row.suffix), comparisons.get(normalizeMetricKey(row.metric))?.total)}</strong>
+              <span>${renderMetricValueWithComparison(formatReportValue(row.average, row.suffix), comparisons.get(normalizeMetricKey(row.metric))?.average)}</span>
             </div>
           `
         )
         .join("")}
     </div>
   `;
+}
+
+function handleComparisonToggle(event) {
+  const brands = getBrands(getActivePeriod());
+  if (event.target.checked && !state.comparison.brandName) {
+    state.comparison.brandName = getDefaultComparisonBrandName(brands);
+  }
+  state.comparison.enabled = Boolean(event.target.checked) && Boolean(state.comparison.brandName);
+  syncComparisonControls();
+  render();
+}
+
+function handleComparisonBrandChange(event) {
+  state.comparison.brandName = event.target.value;
+  if (!state.comparison.brandName) {
+    state.comparison.enabled = false;
+  }
+  if (nodes.compareToggle) {
+    nodes.compareToggle.checked = state.comparison.enabled;
+  }
+  syncComparisonControls();
+  render();
+}
+
+function syncComparisonBrandOptions(brands) {
+  if (!nodes.compareBrandSelect) return;
+
+  const brandNames = brands.map((brand) => brand.name);
+  if (state.comparison.brandName && !brandNames.includes(state.comparison.brandName)) {
+    state.comparison.brandName = "";
+    state.comparison.enabled = false;
+  }
+
+  nodes.compareBrandSelect.innerHTML = `
+    <option value="">Select brand</option>
+    ${brandNames
+      .map((brandName) => `<option value="${escapeHtml(brandName)}">${escapeHtml(brandName)}</option>`)
+      .join("")}
+  `;
+  nodes.compareBrandSelect.value = state.comparison.brandName;
+}
+
+function getDefaultComparisonBrandName(brands) {
+  const brandNames = brands.map((brand) => brand.name);
+  if (brandNames.includes("GA Adriatic")) return "GA Adriatic";
+  return brandNames[0] || "";
+}
+
+function syncComparisonControls() {
+  if (!nodes.compareControls || !nodes.compareToggle || !nodes.compareBrandSelect) return;
+
+  const admin = isAdmin();
+  nodes.compareControls.classList.toggle("is-hidden", !admin);
+  nodes.compareToggle.checked = admin && state.comparison.enabled;
+  nodes.compareBrandSelect.disabled = !admin;
+}
+
+function getComparisonBrand(brands, currentBrand) {
+  if (!isAdmin() || !state.comparison.enabled || !state.comparison.brandName) return null;
+  const comparisonBrand = brands.find((brand) => brand.name === state.comparison.brandName) || null;
+  if (!comparisonBrand || comparisonBrand.name === currentBrand.name) return null;
+  return comparisonBrand;
+}
+
+function buildBrandComparison(brand, report, comparisonBrand) {
+  const empty = {
+    posts: null,
+    impressions: null,
+    engagement: null,
+    engagementRate: null,
+    formats: new Map(),
+    performance: new Map(),
+    creatorActivity: {
+      averagePosts: null,
+      averagePostsPerCreator: null,
+      mostActivePosts: null
+    }
+  };
+  if (!comparisonBrand) return empty;
+
+  const comparisonMetrics = {
+    totalEngagement: toNumber(comparisonBrand.likes) + toNumber(comparisonBrand.comments),
+    videoPosts: toNumber(comparisonBrand.videoPosts || comparisonBrand.reels),
+    photoPosts: toNumber(comparisonBrand.photoPosts || comparisonBrand.staticPosts || comparisonBrand.posts)
+  };
+  const comparisonReport = buildBrandReport(comparisonBrand, comparisonMetrics);
+
+  return {
+    posts: compareMetricValue(toNumber(brand.posts), toNumber(comparisonBrand.posts)),
+    impressions: compareMetricValue(toNumber(brand.impressions), toNumber(comparisonBrand.impressions)),
+    engagement: compareMetricValue(
+      toNumber(brand.likes) + toNumber(brand.comments),
+      comparisonMetrics.totalEngagement
+    ),
+    engagementRate: compareMetricValue(engagementRate(brand), engagementRate(comparisonBrand)),
+    formats: buildFormatComparisons(report.formats, comparisonReport.formats),
+    performance: buildPerformanceComparisons(report.performance, comparisonReport.performance),
+    creatorActivity: {
+      averagePosts: compareMetricValue(report.creatorActivity.averagePosts, comparisonReport.creatorActivity.averagePosts),
+      averagePostsPerCreator: compareMetricValue(
+        report.creatorActivity.averagePostsPerCreator,
+        comparisonReport.creatorActivity.averagePostsPerCreator
+      ),
+      mostActivePosts: compareMetricValue(
+        report.creatorActivity.mostActive?.posts,
+        comparisonReport.creatorActivity.mostActive?.posts
+      )
+    }
+  };
+}
+
+function buildFormatComparisons(currentFormats = [], comparisonFormats = []) {
+  const map = new Map();
+  const comparisonByType = new Map(
+    comparisonFormats.map((item) => [normalizeMetricKey(item.type || item.name), toNumber(item.posts)])
+  );
+
+  currentFormats.forEach((item) => {
+    map.set(normalizeMetricKey(item.type || item.name), compareMetricValue(toNumber(item.posts), comparisonByType.get(normalizeMetricKey(item.type || item.name))));
+  });
+
+  map.set(
+    "total",
+    compareMetricValue(
+      currentFormats.reduce((sum, item) => sum + toNumber(item.posts), 0),
+      comparisonFormats.reduce((sum, item) => sum + toNumber(item.posts), 0)
+    )
+  );
+
+  return map;
+}
+
+function buildPerformanceComparisons(currentRows = [], comparisonRows = []) {
+  const map = new Map();
+  const comparisonByMetric = new Map(comparisonRows.map((row) => [normalizeMetricKey(row.metric), row]));
+
+  currentRows.forEach((row) => {
+    const comparisonRow = comparisonByMetric.get(normalizeMetricKey(row.metric));
+    map.set(normalizeMetricKey(row.metric), {
+      total: compareMetricValue(row.total, comparisonRow?.total),
+      average: compareMetricValue(row.average, comparisonRow?.average)
+    });
+  });
+
+  return map;
+}
+
+function normalizeMetricKey(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function compareMetricValue(currentValue, comparisonValue) {
+  if (!hasMetricValue(currentValue) || !hasMetricValue(comparisonValue)) return null;
+  const current = toNumber(currentValue);
+  const comparison = toNumber(comparisonValue);
+  if (!Number.isFinite(current) || !Number.isFinite(comparison) || current === 0) return null;
+  const delta = ((comparison - current) / current) * 100;
+  if (!Number.isFinite(delta)) return null;
+  if (Math.abs(delta) < 0.05) {
+    return { tone: "neutral", value: 0 };
+  }
+  return {
+    tone: delta > 0 ? "positive" : "negative",
+    value: delta
+  };
+}
+
+function renderMetricValueWithComparison(value, comparison, options = {}) {
+  const compact = options.compact !== false;
+  if (!comparison) {
+    return `<span class="metric-value-stack${compact ? " metric-value-stack--compact" : ""}"><span class="metric-value-stack__value">${value}</span></span>`;
+  }
+
+  return `
+    <span class="metric-value-stack${compact ? " metric-value-stack--compact" : ""}">
+      <span class="metric-value-stack__value">${value}</span>
+      ${renderComparisonBadge(comparison)}
+    </span>
+  `;
+}
+
+function renderComparisonBadge(comparison) {
+  const sign = comparison.value > 0 ? "+" : "";
+  return `<span class="comparison-pill comparison-pill--${escapeHtml(comparison.tone)}">${sign}${formatRoundedComparisonPercent(comparison.value)}%</span>`;
+}
+
+function formatRoundedComparisonPercent(value) {
+  return String(Math.round(toNumber(value)));
 }
 
 function renderBestContent(item, brandIndex, contentIndex) {
@@ -976,19 +1211,22 @@ function ensureBestContent(brand) {
 
 function renderModelTable(models) {
   return `
-    <div class="mini-table">
-      <div class="mini-table__head"><span>Model</span><span>No. of posts</span><span>Total impressions</span></div>
-      ${models
-        .map(
-          (item) => `
-            <div class="mini-table__row">
-              <span>${escapeHtml(item.model)}</span>
-              <strong>${formatNumber.format(toNumber(item.posts))}</strong>
-              <span>${compactNumber(item.impressions)}</span>
-            </div>
-          `
-        )
-        .join("")}
+    <div class="mini-table-wrap">
+      <div class="mini-table">
+        <div class="mini-table__head"><span>Model</span><span>No. of posts</span><span>Total impressions</span></div>
+        ${models
+          .map(
+            (item) => `
+              <div class="mini-table__row">
+                <span>${escapeHtml(item.model)}</span>
+                <strong>${formatNumber.format(toNumber(item.posts))}</strong>
+                <span>${compactNumber(item.impressions)}</span>
+              </div>
+            `
+          )
+          .join("")}
+      </div>
+      <p class="mini-table-note">* Includes only Reels and feed posts. Story data does not provide enough detail for model attribution.</p>
     </div>
   `;
 }

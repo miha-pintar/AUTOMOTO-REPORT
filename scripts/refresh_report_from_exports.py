@@ -666,6 +666,11 @@ def build_post_report(rows, model_terms, included_brands):
             "activeCreators": len(creator_breakdown),
             "contentCount": total_posts,
             "averagePosts": round(total_posts / len(creator_breakdown), 1) if creator_breakdown else 0,
+            "averagePostsPerCreator": round(
+                sum(item["reels"] + item["photos"] for item in creator_breakdown) / len(creator_breakdown), 1
+            )
+            if creator_breakdown
+            else 0,
             "mostActive": {
                 "name": most_active["name"],
                 "posts": most_active["posts"],

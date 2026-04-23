@@ -54,6 +54,16 @@
           <strong>Automoto Report</strong>
           <div class="topbar__actions">
             <span id="accessBadge" class="access-badge"></span>
+            <div id="compareControls" class="compare-controls is-hidden" aria-label="Brand comparison controls">
+              <label class="compare-toggle" for="compareToggle">
+                <input id="compareToggle" type="checkbox" />
+                <span class="compare-toggle__switch" aria-hidden="true"></span>
+                <span class="compare-toggle__label">Compared to</span>
+              </label>
+              <select id="compareBrandSelect" aria-label="Select comparison brand" disabled>
+                <option value="">Select brand</option>
+              </select>
+            </div>
             <button id="shareButton" class="share-button" type="button">Share report</button>
             <button id="logoutButton" class="logout-button" type="button">Odjava</button>
           </div>

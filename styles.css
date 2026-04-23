@@ -181,6 +181,71 @@ a {
   gap: 10px;
 }
 
+.compare-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.compare-controls.is-hidden {
+  display: none;
+}
+
+.compare-toggle {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 12px;
+  background: rgba(25, 25, 25, 0.78);
+  color: var(--text);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.compare-toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.compare-toggle__switch {
+  position: relative;
+  width: 34px;
+  height: 20px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: rgba(244, 240, 232, 0.18);
+  transition: background 180ms ease;
+}
+
+.compare-toggle__switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #f4f0e8;
+  transition: transform 180ms ease, background 180ms ease;
+}
+
+.compare-toggle input:checked + .compare-toggle__switch {
+  background: rgba(230, 84, 42, 0.82);
+}
+
+.compare-toggle input:checked + .compare-toggle__switch::after {
+  transform: translateX(14px);
+  background: #111111;
+}
+
+.compare-toggle__label {
+  color: var(--text);
+}
+
 .file-button,
 .share-button,
 select {
@@ -593,7 +658,7 @@ h3 {
   background: var(--surface-strong);
 }
 
-.kpi span {
+.kpi > span {
   display: block;
   color: var(--muted);
   font-size: 13px;
@@ -601,10 +666,36 @@ h3 {
 }
 
 .kpi strong {
-  display: block;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
   margin-top: 30px;
   font-size: clamp(32px, 4vw, 54px);
   line-height: 1;
+}
+
+.metric-emphasis {
+  align-items: flex-start;
+}
+
+.metric-value-stack {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.metric-value-stack--compact {
+  gap: 6px;
+}
+
+.metric-value-stack__value {
+  display: inline-block;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
 }
 
 .kpi small {
@@ -884,6 +975,11 @@ h3 {
   background: var(--line);
 }
 
+.mini-table-wrap {
+  display: grid;
+  gap: 10px;
+}
+
 .mini-table__head,
 .mini-table__row {
   display: grid;
@@ -907,7 +1003,43 @@ h3 {
 }
 
 .mini-table__row strong {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
   font-size: 18px;
+}
+
+.comparison-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 0;
+  padding: 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.comparison-pill--positive {
+  color: #79d198;
+}
+
+.comparison-pill--neutral {
+  color: #d0c8bc;
+}
+
+.comparison-pill--negative {
+  color: #f0aaa4;
+}
+
+.mini-table-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .mini-table__row--total {
@@ -957,13 +1089,31 @@ h3 {
   margin: 0;
   font-size: 22px;
   font-weight: 800;
+  color: var(--text);
 }
 
-.creator-list dd span {
-  display: block;
+.creator-list dd > span {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
   margin-top: 5px;
   color: var(--accent-soft);
   font-size: 13px;
+}
+
+.creator-list dd .metric-value-stack {
+  align-items: baseline;
+}
+
+.creator-list dd .metric-value-stack:not(.metric-value-stack--compact) {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+}
+
+.creator-list dd .metric-value-stack:not(.metric-value-stack--compact) .comparison-pill {
+  margin-left: 0;
 }
 
 .best-content-grid {
@@ -1386,9 +1536,16 @@ tbody tr:hover {
     align-items: stretch;
   }
 
+  .compare-controls {
+    display: flex;
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+  }
+
   .file-button,
   .share-button,
   select,
+  .compare-toggle,
   .access-badge,
   .logout-button {
     flex: 1;
@@ -1451,6 +1608,10 @@ tbody tr:hover {
 @media (max-width: 560px) {
   .topbar__actions {
     flex-direction: column;
+  }
+
+  .compare-controls {
+    width: 100%;
   }
 
   .kpi-grid,
