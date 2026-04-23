@@ -734,19 +734,7 @@ function renderBrandPanel(brands) {
             <h3>Community feedback analysis</h3>
             <p>Comment volume and sentiment readout for the selected brand.</p>
           </div>
-          <div class="community-strip">
-            <div><span>Comment analysis</span><strong>${formatNumber.format(toNumber(report.community.commentsAnalysed))}</strong></div>
-            <div>
-              <span>Comment sentiment</span>
-              ${
-                report.community.sentiment
-                  ? `<strong class="sentiment sentiment--${escapeHtml(report.community.sentiment)}">${escapeHtml(
-                      report.community.sentiment
-                    )}</strong>`
-                  : `<strong class="community-note">${escapeHtml(report.community.sentimentNote)}</strong>`
-              }
-            </div>
-          </div>
+          ${renderCommunityStatus(report.community)}
           ${renderCommunityDetails(report.community)}
         </article>
 
@@ -1217,15 +1205,34 @@ function renderCommunityDetails(community = {}) {
   const positiveExamples = Array.isArray(community.positiveExamples) ? community.positiveExamples.slice(0, 5) : [];
   const negativeExamples = Array.isArray(community.negativeExamples) ? community.negativeExamples.slice(0, 5) : [];
   const constructiveExamples = Array.isArray(community.constructiveExamples) ? community.constructiveExamples.slice(0, 5) : [];
-  const hasDetails = community.sentimentSummary || positiveExamples.length || negativeExamples.length || constructiveExamples.length;
+  const hasDetails = positiveExamples.length || negativeExamples.length || constructiveExamples.length;
   if (!hasDetails) return "";
 
   return `
     <div class="community-details">
-      ${community.sentimentSummary ? `<p>${escapeHtml(community.sentimentSummary)}</p>` : ""}
       ${renderCommentExampleSlot("Positive signals", positiveExamples)}
       ${renderCommentExampleSlot("Negative signals", negativeExamples)}
       ${renderCommentExampleSlot("Constructive questions and feedback", constructiveExamples)}
+    </div>
+  `;
+}
+
+function renderCommunityStatus(community = {}) {
+  const hasSentiment = Boolean(community.sentiment);
+  const statusLabel = hasSentiment ? community.sentiment : "not available";
+  const statusSummary =
+    community.sentimentSummary || community.sentimentNote || "No clear sentiment pattern was available for this brand.";
+
+  return `
+    <div class="community-status${hasSentiment ? ` community-status--${escapeHtml(community.sentiment)}` : " community-status--unknown"}">
+      <div class="community-status__body">
+        <span class="community-status__eyebrow">Comment sentiment</span>
+        <div class="community-status__headline">
+          <span class="community-status__dot" aria-hidden="true"></span>
+          <strong>${escapeHtml(statusLabel)}</strong>
+        </div>
+        <p>${escapeHtml(statusSummary)}</p>
+      </div>
     </div>
   `;
 }
