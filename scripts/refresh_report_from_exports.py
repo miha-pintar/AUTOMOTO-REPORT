@@ -35,7 +35,7 @@ THEME_RULES = [
     ("Product launches", ["novi", "nova", "predstav", "premier", "launch", "prvič", "najnov", "slovenski avto leta"]),
     ("Test drives", ["test", "vozili", "preizkus", "volan", "vožnj", "testirali", "testna"]),
     ("Promotions", ["ugod", "popust", "akcij", "ponud", "financ", "nagrad", "osvoji", "cene"]),
-    ("Lifestyle", ["potov", "vikend", "družin", "življenj", "izlet", "avantur", "vanlife", "slog"]),
+    ("General", ["potov", "vikend", "družin", "življenj", "izlet", "avantur", "vanlife", "slog"]),
     ("Sustainability", ["elektr", "hibrid", "e-tech", "ev", "plug-in", "brez emis", "trajnost"]),
     ("Brand storytelling", ["zgodba", "intervju", "podkast", "sovoznik", "tradic", "znamk"]),
 ]
@@ -537,7 +537,7 @@ def detect_theme(text):
                 scores[theme] += 1
     if scores:
         return scores.most_common(1)[0][0]
-    return "Lifestyle"
+    return "General"
 
 
 def media_type(row):

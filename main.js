@@ -1058,13 +1058,13 @@ function renderCompetitorMap(brands) {
           data: chartData,
           parsing: false,
           pointBackgroundColor: scatterPointFill,
-          pointBorderColor: "rgba(244, 240, 232, 0.86)",
-          pointBorderWidth: 1.5,
-          pointRadius: 8.5,
+          pointBorderColor: "rgba(230, 84, 42, 0)",
+          pointBorderWidth: 0,
+          pointRadius: 6,
           pointHoverBackgroundColor: "#ffc857",
-          pointHoverBorderColor: "#f4f0e8",
-          pointHoverBorderWidth: 2,
-          pointHoverRadius: 11,
+          pointHoverBorderColor: "rgba(230, 84, 42, 0)",
+          pointHoverBorderWidth: 0,
+          pointHoverRadius: 7.5,
           pointHitRadius: 12
         }
       ]
@@ -1406,9 +1406,10 @@ function scatterPointShadowPlugin() {
       if (args.index !== 0) return;
 
       chart.ctx.save();
-      chart.ctx.shadowColor = "rgba(230, 84, 42, 0.42)";
-      chart.ctx.shadowBlur = 16;
-      chart.ctx.shadowOffsetY = 5;
+      chart.ctx.shadowColor = "rgba(230, 84, 42, 0.92)";
+      chart.ctx.shadowBlur = 28;
+      chart.ctx.shadowOffsetX = 0;
+      chart.ctx.shadowOffsetY = 0;
     },
     afterDatasetDraw(chart, args) {
       if (args.index !== 0) return;

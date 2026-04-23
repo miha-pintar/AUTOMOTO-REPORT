@@ -124,7 +124,7 @@ Refresh procedure:
    - If a post mentions no clear model, group it as `General promotion / model unclear`.
    - If a caption contains multiple clear models, count the post for each model only when the content genuinely promotes multiple models; otherwise choose the primary model implied by the caption.
 5. Analyze `content_caption` for content themes:
-   - Use the existing theme set as the default: `Promotions`, `Product launches`, and `Lifestyle`.
+   - Use the existing theme set as the default: `Promotions`, `Product launches`, and `General`.
    - Add or rename themes only when the captions clearly show a repeated category that improves client understanding.
    - Store theme output in `report.themes` with percentage `share` values that total approximately 100.
 6. Update `report.bestContent` from the best performing rows:
