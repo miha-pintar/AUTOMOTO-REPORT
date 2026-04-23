@@ -1,4 +1,4 @@
-const dataUrl = "/data/report-data.json";
+const dataUrl = "./data/report-data.json";
 
 const formatNumber = new Intl.NumberFormat("sl-SI");
 
@@ -56,6 +56,10 @@ async function init() {
   nodes.fileInput.addEventListener("change", handleFileImport);
   nodes.reportTabs.addEventListener("click", handleTabClick);
   window.addEventListener("popstate", () => {
+    applyTabFromPath();
+    render();
+  });
+  window.addEventListener("hashchange", () => {
     applyTabFromPath();
     render();
   });
@@ -664,10 +668,10 @@ function applyTabFromPath() {
 }
 
 function updatePathForActiveTab() {
-  const nextPath = `/${tabToSlug(state.activeTab)}`;
-  if (window.location.pathname === nextPath) return;
+  const nextHash = `#${tabToSlug(state.activeTab)}`;
+  if (window.location.hash === nextHash) return;
 
-  window.history.pushState({ activeTab: state.activeTab }, "", nextPath);
+  window.history.pushState({ activeTab: state.activeTab }, "", nextHash);
 }
 
 function tabToSlug(tabId) {
@@ -679,7 +683,7 @@ function tabToSlug(tabId) {
 }
 
 function getCurrentPathSlug() {
-  return window.location.pathname.replace(/^\/+|\/+$/g, "");
+  return window.location.hash.replace(/^#+|\/+$/g, "");
 }
 
 function slugify(value) {
