@@ -1,7 +1,6 @@
 const dataUrl = "./data/report-data.json";
 const authStorageKey = "automoto-report-auth";
 const authStorage = window.localStorage;
-const saveStatusDuration = 2400;
 const defaultPasswords = {
   admin: "Epi123!",
   viewer: "GAreport997!"
@@ -22,9 +21,7 @@ const state = {
   heroMiniChart: null,
   brandFormatChart: null,
   brandThemeChart: null,
-  competitorChart: null,
-  saveTimer: null,
-  saveStatusTimer: null
+  competitorChart: null
 };
 
 let currentTabRoutes = new Map();
@@ -78,7 +75,6 @@ async function init() {
 
   nodes.fileInput.addEventListener("change", handleFileImport);
   nodes.reportTabs.addEventListener("click", handleTabClick);
-  nodes.brandPanel.addEventListener("input", handleBestContentInput);
   window.addEventListener("popstate", () => {
     applyTabFromPath();
     render();
@@ -247,10 +243,6 @@ function clearStoredAuth() {
 
 function isAdmin() {
   return state.auth?.role === "admin";
-}
-
-function canSaveReport() {
-  return isAdmin() && state.auth?.serverBacked !== false;
 }
 
 function unlockReport() {
@@ -777,15 +769,11 @@ function renderPerformanceTable(rows) {
 }
 
 function renderBestContent(item, brandIndex, contentIndex) {
-  const videoUrl = item.videoUrl || item.video || "";
-  const imageUrl = item.imageUrl || item.image || "";
   const mediaLabel = item.mediaType || "Post";
-  const mediaClass = imageUrl || videoUrl ? " content-card__media--image" : "";
 
   return `
     <div class="content-card" data-brand-index="${escapeHtml(brandIndex)}" data-content-index="${escapeHtml(contentIndex)}">
-      <div class="content-card__media${mediaClass}">
-        ${renderBestContentMedia(item)}
+      <div class="content-card__media">
         <span>${escapeHtml(mediaLabel)}</span>
       </div>
       <div>
@@ -795,68 +783,9 @@ function renderBestContent(item, brandIndex, contentIndex) {
           <div><dt>Primary</dt><dd>${escapeHtml(item.primaryMetric)}</dd></div>
           <div><dt>Secondary</dt><dd>${escapeHtml(item.secondaryMetric)}</dd></div>
         </dl>
-        ${canSaveReport() ? renderBestContentEditor(item, brandIndex, contentIndex) : ""}
       </div>
     </div>
   `;
-}
-
-function renderBestContentEditor(item, brandIndex, contentIndex) {
-  return `
-    <div class="content-card__editor" aria-label="Media URLs">
-      <label>
-        Image URL
-        <input
-          type="url"
-          inputmode="url"
-          placeholder="https://.../image.jpg"
-          value="${escapeHtml(item.imageUrl || item.image || "")}"
-          data-media-field="imageUrl"
-          data-brand-index="${escapeHtml(brandIndex)}"
-          data-content-index="${escapeHtml(contentIndex)}"
-        />
-      </label>
-      <label>
-        Video URL
-        <input
-          type="url"
-          inputmode="url"
-          placeholder="https://.../video.mp4"
-          value="${escapeHtml(item.videoUrl || item.video || "")}"
-          data-media-field="videoUrl"
-          data-brand-index="${escapeHtml(brandIndex)}"
-          data-content-index="${escapeHtml(contentIndex)}"
-        />
-      </label>
-      <span class="content-card__save" data-save-status="${escapeHtml(brandIndex)}-${escapeHtml(contentIndex)}"></span>
-    </div>
-  `;
-}
-
-function handleBestContentInput(event) {
-  const input = event.target.closest("[data-media-field]");
-  if (!input || !canSaveReport()) return;
-
-  const brandIndex = Number(input.dataset.brandIndex);
-  const contentIndex = Number(input.dataset.contentIndex);
-  const field = input.dataset.mediaField;
-  const item = getEditableBestContentItem(brandIndex, contentIndex);
-  if (!item || (field !== "imageUrl" && field !== "videoUrl")) return;
-
-  item[field] = input.value.trim();
-  updateBestContentMedia(brandIndex, contentIndex, item);
-  showSaveStatus(brandIndex, contentIndex, "Saving...");
-  scheduleReportSave(brandIndex, contentIndex);
-}
-
-function getEditableBestContentItem(brandIndex, contentIndex) {
-  const period = getActivePeriod();
-  const brand = getBrands(period)[brandIndex];
-  if (!brand) return null;
-
-  ensureBestContent(brand);
-
-  return brand.report.bestContent[contentIndex] || null;
 }
 
 function ensureBestContent(brand) {
@@ -868,115 +797,6 @@ function ensureBestContent(brand) {
   const photoPosts = toNumber(brand.photoPosts || brand.staticPosts || brand.posts);
   brand.report.bestContent = buildBrandReport(brand, { totalEngagement, videoPosts, photoPosts }).bestContent;
   return brand.report.bestContent;
-}
-
-function updateBestContentMedia(brandIndex, contentIndex, item) {
-  const card = nodes.brandPanel.querySelector(
-    `.content-card[data-brand-index="${CSS.escape(String(brandIndex))}"][data-content-index="${CSS.escape(String(contentIndex))}"]`
-  );
-  const media = card?.querySelector(".content-card__media");
-  if (!media) return;
-
-  const videoUrl = item.videoUrl || item.video || "";
-  const imageUrl = item.imageUrl || item.image || "";
-  const mediaLabel = item.mediaType || "Post";
-
-  media.classList.toggle("content-card__media--image", Boolean(imageUrl || videoUrl));
-  media.innerHTML = `
-    ${renderBestContentMedia(item)}
-    <span>${escapeHtml(mediaLabel)}</span>
-  `;
-}
-
-function renderBestContentMedia(item) {
-  const videoUrl = item.videoUrl || item.video || "";
-  const imageUrl = item.imageUrl || item.image || "";
-  const mediaLabel = item.mediaType || "Post";
-
-  if (videoUrl) {
-    const embedUrl = videoEmbedUrl(videoUrl);
-    if (embedUrl) {
-      return `<iframe src="${escapeHtml(embedUrl)}" title="${escapeHtml(`${item.label || mediaLabel} video`)}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>`;
-    }
-
-    return `<video src="${escapeHtml(videoUrl)}" controls muted playsinline preload="metadata"></video>`;
-  }
-
-  if (imageUrl) {
-    return `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(`${item.label || mediaLabel} by ${item.creator || "creator"}`)}" loading="lazy" />`;
-  }
-
-  return "";
-}
-
-function videoEmbedUrl(value) {
-  try {
-    const url = new URL(value);
-    const host = url.hostname.replace(/^www\./, "");
-
-    if (host === "youtu.be") {
-      const id = url.pathname.split("/").filter(Boolean)[0];
-      return id ? `https://www.youtube.com/embed/${encodeURIComponent(id)}` : "";
-    }
-
-    if (host === "youtube.com" || host === "m.youtube.com") {
-      const watchId = url.searchParams.get("v");
-      const pathParts = url.pathname.split("/").filter(Boolean);
-      const id = watchId || (["shorts", "embed"].includes(pathParts[0]) ? pathParts[1] : "");
-      return id ? `https://www.youtube.com/embed/${encodeURIComponent(id)}` : "";
-    }
-
-    if (host === "vimeo.com" || host === "player.vimeo.com") {
-      const id = url.pathname.split("/").filter(Boolean).pop();
-      return id ? `https://player.vimeo.com/video/${encodeURIComponent(id)}` : "";
-    }
-  } catch {
-    return "";
-  }
-
-  return "";
-}
-
-function scheduleReportSave(brandIndex, contentIndex) {
-  window.clearTimeout(state.saveTimer);
-  state.saveTimer = window.setTimeout(async () => {
-    try {
-      await saveReportData();
-      showSaveStatus(brandIndex, contentIndex, "Saved");
-    } catch {
-      showSaveStatus(brandIndex, contentIndex, "Server save failed");
-    }
-  }, 550);
-}
-
-async function saveReportData() {
-  if (!canSaveReport()) {
-    throw new Error("Server-backed admin session is required.");
-  }
-
-  const response = await fetch("./api/report-data", {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    credentials: "same-origin",
-    body: JSON.stringify(state.data)
-  });
-
-  if (!response.ok) {
-    throw new Error("Report save failed.");
-  }
-}
-
-function showSaveStatus(brandIndex, contentIndex, message) {
-  const status = nodes.brandPanel.querySelector(`[data-save-status="${CSS.escape(`${brandIndex}-${contentIndex}`)}"]`);
-  if (!status) return;
-
-  status.textContent = message;
-  window.clearTimeout(state.saveStatusTimer);
-  if (message === "Saving...") return;
-
-  state.saveStatusTimer = window.setTimeout(() => {
-    status.textContent = "";
-  }, saveStatusDuration);
 }
 
 function renderModelTable(models) {

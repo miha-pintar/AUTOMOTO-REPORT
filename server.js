@@ -1,11 +1,10 @@
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 const port = Number(process.env.PORT || 5173);
 const root = resolve(process.cwd());
-const reportDataPath = join(root, "data", "report-data.json");
 const sessionTtlSeconds = Number(process.env.SESSION_DAYS || 180) * 24 * 60 * 60;
 const passwords = {
   admin: process.env.ADMIN_PASSWORD || "Epi123!",
@@ -166,23 +165,6 @@ async function handleApi(req, res, pathname) {
     sendJson(res, 200, { ok: true }, {
       "Set-Cookie": "automoto_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0"
     });
-    return true;
-  }
-
-  if (pathname === "/api/report-data" && req.method === "PUT") {
-    const session = getSession(req);
-    if (session?.role !== "admin") {
-      sendJson(res, 403, { error: "Admin access required" });
-      return true;
-    }
-
-    try {
-      const body = await readJsonBody(req);
-      await writeFile(reportDataPath, `${JSON.stringify(body, null, 2)}\n`, "utf8");
-      sendJson(res, 200, { ok: true });
-    } catch {
-      sendJson(res, 400, { error: "Invalid report data" });
-    }
     return true;
   }
 
