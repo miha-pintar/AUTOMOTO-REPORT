@@ -42,6 +42,24 @@ const brandLogos = [
     src: "./assets/content/skoda-logo.png",
     alt: "Skoda logo",
     background: "light"
+  },
+  {
+    aliases: ["renault", "renault slovenija"],
+    src: "./assets/content/renault-logo.png",
+    alt: "Renault logo",
+    background: "light"
+  },
+  {
+    aliases: ["dacia", "dacia slovenija"],
+    src: "./assets/content/Dacia-logo.png",
+    alt: "Dacia logo",
+    background: "light"
+  },
+  {
+    aliases: ["alpine", "alpine cars", "alpine slovenija"],
+    src: "./assets/content/Alpine-Cars-Logo.png",
+    alt: "Alpine logo",
+    background: "light"
   }
 ];
 
@@ -100,7 +118,6 @@ const nodes = {
   competitorImpressionsChart: document.querySelector("#competitorImpressionsChart"),
   competitorInfluencerMap: document.querySelector("#competitorInfluencerMap"),
   competitorInfluencerChart: document.querySelector("#competitorInfluencerChart"),
-  competitorDataSummary: document.querySelector("#competitorDataSummary"),
   competitorPostsTable: document.querySelector("#competitorPostsTable"),
   competitorInfluencerTable: document.querySelector("#competitorInfluencerTable"),
   typeChart: document.querySelector("#typeChart"),
@@ -481,7 +498,6 @@ function render() {
         <article class="brand-row">
           <div>
             ${renderBrandIdentity(brand.name, { tag: "h3" })}
-            <p>${escapeHtml((brand.brandsIncluded || [brand.name]).join(", "))}</p>
           </div>
           <dl>
             <div><dt>Posts</dt><dd>${formatNumber.format(toNumber(brand.posts))}</dd></div>
@@ -615,16 +631,17 @@ function renderBrandPanel(brands) {
     <section class="section section--brand-detail" aria-labelledby="brandDetailTitle">
       <div class="brand-detail__intro">
         <p class="eyebrow">Brand report</p>
-        ${renderBrandIdentity(brand.name, { tag: "h2", className: "brand-identity--title", id: "brandDetailTitle" })}
+        <h2 id="brandDetailTitle">${escapeHtml(brand.name)}</h2>
         <p class="summary-note">${escapeHtml(report.summary)}</p>
-        <div class="brand-report__meta">
-          <span>${renderBrandIdentity(brand.name, { className: "brand-identity--meta" })}</span>
-          ${
-            report.contentPreviewUrl
-              ? `<a href="${escapeHtml(report.contentPreviewUrl)}" target="_blank" rel="noreferrer">Content preview</a>`
-              : ""
-          }
-        </div>
+        ${
+          report.contentPreviewUrl
+            ? `
+              <div class="brand-report__meta">
+                <a href="${escapeHtml(report.contentPreviewUrl)}" target="_blank" rel="noreferrer">Content preview</a>
+              </div>
+            `
+            : ""
+        }
       </div>
 
       <div class="brand-detail__metrics">
@@ -1453,7 +1470,7 @@ function createCompetitorChart(canvas, chartStateKey, chartData, config) {
             color: "#b9b2a7",
             font: chartFont(11),
             padding: 10,
-            callback: config.xTick
+            callback: config.xTick || ((value) => compactNumber(value))
           }
         },
         y: {
@@ -1506,9 +1523,9 @@ function renderCompetitorMap(brands) {
       maxEr: normalizedMaxEr,
       xTitle: "More posts",
       tooltipLabels: (raw) => [
-        `Posts: ${formatNumber.format(raw.posts)}`,
+        `Posts: ${compactNumber(raw.posts)}`,
         `ER: ${formatPercent(raw.y)}%`,
-        `Impressions: ${formatNumber.format(raw.impressions)}`
+        `Impressions: ${compactNumber(raw.impressions)}`
       ]
     });
   }
@@ -1526,9 +1543,9 @@ function renderCompetitorMap(brands) {
         xTitle: "More impressions",
         xTick: (value) => compactNumber(value),
         tooltipLabels: (raw) => [
-          `Impressions: ${formatNumber.format(raw.impressions)}`,
+          `Impressions: ${compactNumber(raw.impressions)}`,
           `ER: ${formatPercent(raw.y)}%`,
-          `Posts: ${formatNumber.format(raw.posts)}`
+          `Posts: ${compactNumber(raw.posts)}`
         ]
       }
     );
@@ -1590,6 +1607,7 @@ function renderCompetitorInfluencerMap(brands, influencerMatrix) {
       scales: {
         x: {
           type: "category",
+          position: "top",
           labels: brands.map((brand) => brand.name),
           offset: true,
           title: {
@@ -1699,6 +1717,12 @@ function getBrandLogo(name) {
   );
 }
 
+function formatBrandDisplayName(name) {
+  const normalized = normalizeBrandKey(name);
+  if (normalized === "vw") return "Volkswagen";
+  return name || "-";
+}
+
 function renderBrandIdentity(name, options = {}) {
   const { tag = "span", className = "", id = "" } = options;
   const logo = getBrandLogo(name);
@@ -1714,7 +1738,7 @@ function renderBrandIdentity(name, options = {}) {
           ? `<span class="${logoBadgeClass}"><img class="brand-identity__logo" src="${escapeHtml(logo.src)}" alt="${escapeHtml(logo.alt)}"></span>`
           : ""
       }
-      <span class="brand-identity__text">${escapeHtml(name || "-")}</span>
+      <span class="brand-identity__text">${escapeHtml(formatBrandDisplayName(name))}</span>
     </${tag}>
   `;
 }
@@ -2051,28 +2075,7 @@ function scatterLabelPlugin() {
 }
 
 function renderCompetitorSourceData(brands) {
-  if (!nodes.competitorDataSummary || !nodes.competitorPostsTable || !nodes.competitorInfluencerTable) return;
-
-  const totals = calculateTotals(brands);
-  const averageEr = brands.length
-    ? brands.reduce((sum, brand) => sum + engagementRate(brand), 0) / brands.length
-    : 0;
-
-  nodes.competitorDataSummary.innerHTML = [
-    ["Brands", brands.length],
-    ["Posts", formatNumber.format(totals.posts)],
-    ["Impressions", formatNumber.format(totals.impressions)],
-    ["Avg. ER", `${formatPercent(averageEr)}%`]
-  ]
-    .map(
-      ([label, value]) => `
-        <div class="competitor-data-summary__item">
-          <span>${escapeHtml(String(label))}</span>
-          <strong>${escapeHtml(String(value))}</strong>
-        </div>
-      `
-    )
-    .join("");
+  if (!nodes.competitorPostsTable || !nodes.competitorInfluencerTable) return;
 
   nodes.competitorPostsTable.innerHTML = renderCompetitorMetricTable(brands, buildCompetitorPostMetrics());
   nodes.competitorInfluencerTable.innerHTML = renderCompetitorMetricTable(brands, buildCompetitorInfluencerMetrics());
@@ -2091,7 +2094,7 @@ function renderCompetitorMetricTable(brands, metrics) {
               <th>
                 <div class="competitor-table__brand">
                   ${renderBrandIdentity(brand.name, { tag: "strong", className: "brand-identity--table" })}
-                  <span>${formatNumber.format(toNumber(brand.impressions))} impressions</span>
+                  <span>${formatCompetitorCompact(toNumber(brand.impressions))} impressions</span>
                 </div>
               </th>
             `
@@ -2125,27 +2128,27 @@ function renderCompetitorMetricValue(value) {
 
 function buildCompetitorPostMetrics() {
   return [
-    { label: "Total posts", value: (brand) => formatNumber.format(toNumber(brand.posts)) },
-    { label: "Reels & feed posts", value: (brand) => formatNumber.format(getFeedAndReelPosts(brand)) },
-    { label: "Stories", value: (brand) => formatNumber.format(getStoryPosts(brand)) },
-    { label: "Photos (only reels & feed posts)", value: (brand) => formatNumber.format(getPhotoPosts(brand)) },
-    { label: "Videos (only reels & feed posts)", value: (brand) => formatNumber.format(getVideoPosts(brand)) },
-    { label: "Total engagement", value: (brand) => formatNumber.format(getTotalEngagement(brand)) },
+    { label: "Total posts", value: (brand) => formatCompetitorCompact(toNumber(brand.posts)) },
+    { label: "Reels & feed posts", value: (brand) => formatCompetitorCompact(getFeedAndReelPosts(brand)) },
+    { label: "Stories", value: (brand) => formatCompetitorCompact(getStoryPosts(brand)) },
+    { label: "Photos (only reels & feed posts)", value: (brand) => formatCompetitorCompact(getPhotoPosts(brand)) },
+    { label: "Videos (only reels & feed posts)", value: (brand) => formatCompetitorCompact(getVideoPosts(brand)) },
+    { label: "Total engagement", value: (brand) => formatCompetitorCompact(getTotalEngagement(brand)) },
     { label: "Avg. engagement rate", value: (brand) => renderErPill(engagementRate(brand)) },
-    { label: "Total likes", value: (brand) => formatNumber.format(toNumber(brand.likes)) },
-    { label: "Avg. likes", value: (brand) => formatDecimal(averagePerPost(brand.likes, brand.posts)) },
-    { label: "Total comments", value: (brand) => formatNumber.format(toNumber(brand.comments)) },
-    { label: "Avg. comments", value: (brand) => formatDecimal(averagePerPost(brand.comments, brand.posts)) },
-    { label: "Total impressions", value: (brand) => formatNumber.format(toNumber(brand.impressions)) },
-    { label: "Avg. impressions", value: (brand) => formatDecimal(averagePerPost(brand.impressions, brand.posts)) }
+    { label: "Total likes", value: (brand) => formatCompetitorCompact(toNumber(brand.likes)) },
+    { label: "Avg. likes", value: (brand) => formatCompetitorCompact(averagePerPost(brand.likes, brand.posts)) },
+    { label: "Total comments", value: (brand) => formatCompetitorCompact(toNumber(brand.comments)) },
+    { label: "Avg. comments", value: (brand) => formatCompetitorCompact(averagePerPost(brand.comments, brand.posts)) },
+    { label: "Total impressions", value: (brand) => formatCompetitorCompact(toNumber(brand.impressions)) },
+    { label: "Avg. impressions", value: (brand) => formatCompetitorCompact(averagePerPost(brand.impressions, brand.posts)) }
   ];
 }
 
 function buildCompetitorInfluencerMetrics() {
   return [
-    { label: "Active influencers", value: (brand) => formatNumber.format(getActiveCreators(brand)) },
-    { label: "Avg. posts per influencer", value: (brand) => formatDecimal(getAveragePostsPerInfluencer(brand)) },
-    { label: "Avg. posts per influencer (only reels & feed posts)", value: (brand) => formatDecimal(getAverageFeedPostsPerInfluencer(brand)) }
+    { label: "Active influencers", value: (brand) => formatCompetitorCompact(getActiveCreators(brand)) },
+    { label: "Avg. posts per influencer", value: (brand) => formatCompetitorCompact(getAveragePostsPerInfluencer(brand)) },
+    { label: "Avg. posts per influencer (only reels & feed posts)", value: (brand) => formatCompetitorCompact(getAverageFeedPostsPerInfluencer(brand)) }
   ];
 }
 
@@ -2393,6 +2396,13 @@ function compactNumber(value) {
   if (number >= 1000000) return `${formatNumber.format(number / 1000000)} M`;
   if (number >= 1000) return `${formatNumber.format(number / 1000)} k`;
   return formatNumber.format(number);
+}
+
+function formatCompetitorCompact(value) {
+  const number = toNumber(value);
+  if (!Number.isFinite(number)) return "-";
+  if (Math.abs(number) >= 1000) return compactNumber(number);
+  return Number.isInteger(number) ? formatNumber.format(number) : formatDecimal(number);
 }
 
 function formatDate(value) {
