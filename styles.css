@@ -985,7 +985,7 @@ h3 {
   position: relative;
   overflow: hidden;
   display: grid;
-  place-items: end start;
+  place-items: start start;
   aspect-ratio: 9 / 16;
   min-height: 300px;
   border: 1px solid rgba(244, 240, 232, 0.12);
@@ -1011,9 +1011,11 @@ h3 {
   background: #0f0f0f;
 }
 
-.content-card__media span {
+.content-card__badge {
   position: relative;
   z-index: 1;
+  align-self: start;
+  justify-self: start;
   border-radius: 4px;
   padding: 5px 8px;
   background: rgba(17, 17, 17, 0.78);
@@ -1179,7 +1181,7 @@ h3 {
   grid-column: 1 / -1;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1px;
-  background: var(--line);
+  background: transparent;
 }
 
 .community-details > p {
@@ -1198,8 +1200,9 @@ h3 {
   background: #161616;
 }
 
-.comment-examples--constructive:last-child {
-  grid-column: 1 / -1;
+.comment-examples--empty {
+  min-height: 0;
+  padding-bottom: 0;
 }
 
 .comment-examples h4 {

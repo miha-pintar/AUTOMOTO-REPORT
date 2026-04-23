@@ -69,14 +69,14 @@ async function init() {
   restoreStoredAuth();
   await restoreServerAuth();
 
-  nodes.periodSelect.addEventListener("change", (event) => {
+  nodes.periodSelect?.addEventListener("change", (event) => {
     state.activePeriodId = event.target.value;
     state.activeTab = "overview";
     updatePathForActiveTab();
     render();
   });
 
-  nodes.fileInput.addEventListener("change", handleFileImport);
+  nodes.fileInput?.addEventListener("change", handleFileImport);
   nodes.reportTabs.addEventListener("click", handleTabClick);
   window.addEventListener("popstate", () => {
     applyTabFromPath();
@@ -256,7 +256,7 @@ async function handleShareReport() {
     }
 
     const share = await response.json();
-    const shareUrl = new URL(share.url || share.path, window.location.origin);
+    const shareUrl = resolveShareUrl(share);
     shareUrl.hash = window.location.hash;
 
     await copyText(shareUrl.toString());
@@ -272,6 +272,32 @@ async function handleShareReport() {
   } finally {
     nodes.shareButton.disabled = false;
   }
+}
+
+function resolveShareUrl(share) {
+  if (share?.token) {
+    return new URL(`share/${share.token}`, getAppBaseUrl());
+  }
+
+  if (share?.path) {
+    const normalizedPath = String(share.path).replace(/^\/+/, "");
+    return new URL(normalizedPath, getAppBaseUrl());
+  }
+
+  if (share?.url) {
+    return new URL(share.url, window.location.href);
+  }
+
+  throw new Error("Share link payload missing.");
+}
+
+function getAppBaseUrl() {
+  const currentUrl = new URL(window.location.href);
+  const pathname = currentUrl.pathname.endsWith("/")
+    ? currentUrl.pathname
+    : `${currentUrl.pathname.replace(/\/[^/]*$/, "/")}`;
+
+  return new URL(pathname, currentUrl.origin);
 }
 
 async function copyText(value) {
@@ -307,8 +333,7 @@ function unlockReport() {
   nodes.accessBadge.textContent = isAdmin() ? "Admin mode" : "View only";
   nodes.shareButton.classList.toggle("is-hidden", !isAdmin());
   nodes.shareButton.disabled = !isAdmin();
-  nodes.fileInput.disabled = !isAdmin();
-  nodes.fileInput.closest(".file-button")?.classList.toggle("is-hidden", !isAdmin());
+  nodes.fileInput?.closest(".file-button")?.classList.toggle("is-hidden", !isAdmin());
 }
 
 function lockReport() {
@@ -320,8 +345,7 @@ function lockReport() {
   nodes.shareButton.classList.add("is-hidden");
   nodes.shareButton.disabled = true;
   nodes.shareButton.textContent = "Share report";
-  nodes.fileInput.disabled = true;
-  nodes.fileInput.closest(".file-button")?.classList.add("is-hidden");
+  nodes.fileInput?.closest(".file-button")?.classList.add("is-hidden");
   nodes.passwordInput.focus();
 }
 
@@ -353,10 +377,12 @@ function render() {
   nodes.brandLabel.textContent = `Brands: ${reviewedBrands.join(", ")}`;
   nodes.contentCount.innerHTML = `<strong>${formatNumber.format(totals.posts)}</strong> pieces of content were created.`;
 
-  nodes.periodSelect.innerHTML = state.data.periods
-    .map((item) => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.label)}</option>`)
-    .join("");
-  nodes.periodSelect.value = period.id;
+  if (nodes.periodSelect) {
+    nodes.periodSelect.innerHTML = state.data.periods
+      .map((item) => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.label)}</option>`)
+      .join("");
+    nodes.periodSelect.value = period.id;
+  }
 
   nodes.kpis.innerHTML = [
     ["Content", formatNumber.format(totals.posts), "Total posts"],
@@ -584,8 +610,8 @@ function renderBrandPanel(brands) {
               <dt>Most active creator</dt>
               <dd>
                 ${
-                  report.creatorActivity.mostActive.url
-                    ? `<a href="${escapeHtml(report.creatorActivity.mostActive.url)}" target="_blank" rel="noreferrer">${escapeHtml(
+                  getCreatorAnalyticsUrl(report.creatorActivity.mostActive.url, report.creatorActivity.mostActive.name)
+                    ? `<a href="${escapeHtml(getCreatorAnalyticsUrl(report.creatorActivity.mostActive.url, report.creatorActivity.mostActive.name))}" target="_blank" rel="noreferrer">${escapeHtml(
                         report.creatorActivity.mostActive.name
                       )}</a>`
                     : escapeHtml(report.creatorActivity.mostActive.name)
@@ -599,7 +625,7 @@ function renderBrandPanel(brands) {
         <article class="brand-report-block brand-report-block--wide">
           <div>
             <h3>Best performing content</h3>
-            <p>Top creative slots by format. Add post-level URLs when source exports include them.</p>
+            <p>Top creative slots by format.</p>
           </div>
           <div class="best-content-grid">
             ${report.bestContent.map((item, index) => renderBestContent(item, Number(state.activeTab.split(":")[1]), index)).join("")}
@@ -812,8 +838,9 @@ function renderCreatorBreakdownRow(row) {
     row.engagementRate ??
     row.er ??
     (hasMetricValue(engagement) && toNumber(row.impressions) ? (toNumber(engagement) / toNumber(row.impressions)) * 100 : null);
-  const name = row.url
-    ? `<a href="${escapeHtml(row.url)}" target="_blank" rel="noreferrer">${escapeHtml(row.name || row.profile || "Source needed")}</a>`
+  const analyticsUrl = getCreatorAnalyticsUrl(row.url, row.name, row.profile);
+  const name = analyticsUrl
+    ? `<a href="${escapeHtml(analyticsUrl)}" target="_blank" rel="noreferrer">${escapeHtml(row.name || row.profile || "Source needed")}</a>`
     : escapeHtml(row.name || row.profile || "Source needed");
 
   return `
@@ -859,7 +886,7 @@ function renderBestContent(item, brandIndex, contentIndex) {
     <div class="content-card" data-brand-index="${escapeHtml(brandIndex)}" data-content-index="${escapeHtml(contentIndex)}">
       <div class="content-card__media">
         ${renderBestContentMedia(item, mediaLabel)}
-        <span>${escapeHtml(mediaLabel)}</span>
+        <span class="content-card__badge">${escapeHtml(mediaLabel)}</span>
       </div>
       <div>
         <h4>${escapeHtml(item.label)}</h4>
@@ -903,26 +930,23 @@ function renderCommunityDetails(community = {}) {
   return `
     <div class="community-details">
       ${community.sentimentSummary ? `<p>${escapeHtml(community.sentimentSummary)}</p>` : ""}
-      ${renderCommentExampleList("Positive signals", positiveExamples)}
-      ${renderCommentExampleList("Negative signals", negativeExamples)}
-      ${renderCommentExampleList("Constructive questions and feedback", constructiveExamples)}
+      ${renderCommentExampleSlot("Positive signals", positiveExamples)}
+      ${renderCommentExampleSlot("Negative signals", negativeExamples)}
+      ${renderCommentExampleSlot("Constructive questions and feedback", constructiveExamples)}
     </div>
   `;
 }
 
-function renderCommentExampleList(title, comments) {
-  if (!comments.length) return "";
+function renderCommentExampleSlot(title, comments) {
   const modifier = title.toLowerCase().includes("negative")
     ? "comment-examples--negative"
     : title.toLowerCase().includes("constructive")
       ? "comment-examples--constructive"
       : "comment-examples--positive";
   return `
-    <div class="comment-examples ${modifier}">
+    <div class="comment-examples ${modifier}${comments.length ? "" : " comment-examples--empty"}">
       <h4>${escapeHtml(title)}</h4>
-      <div class="comment-example-grid">
-        ${comments.map(renderCommentExample).join("")}
-      </div>
+      ${comments.length ? `<div class="comment-example-grid">${comments.map(renderCommentExample).join("")}</div>` : ""}
     </div>
   `;
 }
@@ -1565,6 +1589,47 @@ function formatOptionalNumber(value) {
 function normalizeCommentSentiment(value) {
   const sentiment = String(value || "").trim().toLowerCase();
   return commentSentiments.has(sentiment) ? sentiment : "";
+}
+
+function getCreatorAnalyticsUrl(...values) {
+  const username = extractCreatorUsername(...values);
+  return username ? `https://be.epidemic.co/analytics/${encodeURIComponent(username)}` : "";
+}
+
+function extractCreatorUsername(...values) {
+  for (const value of values) {
+    const username = extractUsernameCandidate(value);
+    if (username) return username;
+  }
+
+  return "";
+}
+
+function extractUsernameCandidate(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+
+  try {
+    const url = new URL(raw);
+    if (url.hostname.includes("instagram.com") || url.hostname.includes("epidemic.co")) {
+      const segment = url.pathname.split("/").filter(Boolean)[0];
+      return sanitizeUsername(segment);
+    }
+  } catch {
+    // Not a URL; continue with plain-text parsing.
+  }
+
+  return sanitizeUsername(raw.replace(/^@+/, ""));
+}
+
+function sanitizeUsername(value) {
+  const sanitized = String(value || "")
+    .trim()
+    .replace(/^@+/, "")
+    .replace(/[/?#].*$/, "")
+    .replace(/[^a-zA-Z0-9._]/g, "");
+
+  return sanitized || "";
 }
 
 function hasMetricValue(value) {
