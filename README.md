@@ -45,15 +45,21 @@ Na static hostingu, kot je GitHub Pages, prijava deluje samo kot client-side zak
 
 ## Share URL brez gesla
 
-Node server podpira tudi view-only dostop prek unikatnega share URL-ja:
+Admin uporabnik ima v zgornji vrstici gumb `Share report`. Vsak klik ustvari nov unikaten view-only share URL in ga kopira v clipboard.
 
 ```text
-http://localhost:5173/share/ga-adriatic-2026-share-a8f4c2d9
+http://localhost:5173/share/<unikaten-token>
 ```
 
-Kdor odpre ta link, dobi view-only sejo brez vnosa gesla. Admin funkcije, kot je uvoz CSV/XLS, ostanejo skrite.
+Kdor odpre tak link, dobi view-only sejo brez vnosa gesla. Admin funkcije, kot je uvoz CSV/XLS in generiranje novih share linkov, ostanejo skrite.
 
-Share token lahko zamenjas z environment spremenljivko `SHARE_TOKEN`:
+Ustvarjeni share tokeni se shranijo v:
+
+```text
+data/share-links.json
+```
+
+Za fiksni ročni share token lahko dodatno uporabis environment spremenljivko `SHARE_TOKEN`:
 
 ```bash
 SHARE_TOKEN="unikaten-zakljucek-linka" npm run dev
@@ -65,7 +71,7 @@ Potem je share link:
 http://localhost:5173/share/unikaten-zakljucek-linka
 ```
 
-Ce zamenjas `SHARE_TOKEN`, stari share URL ne deluje vec za nove obiske.
+Ce zamenjas `SHARE_TOKEN`, stari rocni share URL ne deluje vec za nove obiske. Linki, ustvarjeni z gumbom, ostanejo veljavni, dokler so zapisani v `data/share-links.json`.
 
 ## GitHub Pages
 
@@ -114,7 +120,9 @@ V browserju lahko uporabis gumb `Uvozi CSV/XLS`. CSV dela lokalno, XLS/XLSX pa u
 Priporočeni stolpci:
 
 ```text
-handle,name,platform,followers,posts,reels,stories,impressions,reach,engagements,linkClicks,spent,contentTheme
+brand,brandsIncluded,posts,reels,photoPosts,impressions,likes,comments,commentsAnalysed,commentSentiment
 ```
 
 Uvoz je trenutno samo preview v browserju. Za trajno shranjevanje prekopiraj ociscene podatke v `data/report-data.json`.
+
+`commentSentiment` je sentiment komentarjev za posamezno znamko. Dovoljene vrednosti so `positive`, `neutral` ali `negative`. Ce sentimenta iz komentarjev ni mogoce razbrati, pusti polje prazno; porocilo bo prikazalo opombo `sentimenta ni mogoče razbrati`.

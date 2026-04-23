@@ -182,6 +182,7 @@ a {
 }
 
 .file-button,
+.share-button,
 select {
   min-height: 40px;
   border: 1px solid var(--line);
@@ -202,6 +203,29 @@ select {
 }
 
 .file-button.is-hidden {
+  display: none;
+}
+
+.share-button {
+  padding: 0 14px;
+  color: #111111;
+  background: var(--accent);
+  border-color: var(--accent);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.share-button:hover:not(:disabled) {
+  background: var(--accent-soft);
+  border-color: var(--accent-soft);
+}
+
+.share-button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.share-button.is-hidden {
   display: none;
 }
 
@@ -1136,6 +1160,29 @@ h3 {
   line-height: 1;
 }
 
+.community-note {
+  color: var(--muted);
+  font-size: clamp(18px, 2.1vw, 26px);
+  line-height: 1.2;
+  text-transform: none;
+}
+
+.sentiment {
+  text-transform: lowercase;
+}
+
+.sentiment--positive {
+  color: var(--green);
+}
+
+.sentiment--neutral {
+  color: var(--accent-soft);
+}
+
+.sentiment--negative {
+  color: var(--rose);
+}
+
 .competitor-map {
   position: relative;
   min-height: 540px;
@@ -1218,6 +1265,7 @@ tbody tr:hover {
   }
 
   .file-button,
+  .share-button,
   select,
   .access-badge,
   .logout-button {

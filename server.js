@@ -1,7 +1,7 @@
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
-import { readFile } from "node:fs/promises";
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
 const port = Number(process.env.PORT || 5173);
 const root = resolve(process.cwd());
@@ -12,6 +12,8 @@ const passwords = {
 };
 const shareToken = process.env.SHARE_TOKEN || "ga-adriatic-2026-share-a8f4c2d9";
 const sessionSecret = process.env.SESSION_SECRET || `${passwords.admin}:${passwords.viewer}:automoto-report`;
+const shareLinksPath = join(root, "data", "share-links.json");
+let shareLinksWriteQueue = Promise.resolve();
 
 const contentTypes = {
   ".html": "text/html; charset=utf-8",
@@ -104,17 +106,75 @@ async function readIndexHtml({ rootBase = false } = {}) {
   return rootBase ? file.replace("<head>", '<head>\n    <base href="/" />') : file;
 }
 
-function isValidSharePath(pathname) {
+async function readShareLinks() {
+  try {
+    const file = await readFile(shareLinksPath, "utf8");
+    const data = JSON.parse(file);
+    return Array.isArray(data.tokens) ? data.tokens : [];
+  } catch {
+    return [];
+  }
+}
+
+async function saveShareLinks(tokens) {
+  await mkdir(join(root, "data"), { recursive: true });
+  await writeFile(shareLinksPath, `${JSON.stringify({ tokens }, null, 2)}\n`);
+}
+
+async function createShareLink(req, createdBy) {
+  const protocol = req.headers["x-forwarded-proto"] || "http";
+  const host = req.headers["x-forwarded-host"] || req.headers.host;
+
+  const createTask = shareLinksWriteQueue.then(async () => {
+    const tokens = await readShareLinks();
+    let token = randomBytes(24).toString("base64url");
+
+    while (tokens.some((item) => item.token === token) || token === shareToken) {
+      token = randomBytes(24).toString("base64url");
+    }
+
+    const nextTokens = [
+      ...tokens,
+      {
+        token,
+        createdAt: new Date().toISOString(),
+        createdBy
+      }
+    ];
+    await saveShareLinks(nextTokens);
+
+    const path = `/share/${token}`;
+
+    return {
+      token,
+      path,
+      url: host ? `${protocol}://${host}${path}` : path
+    };
+  });
+
+  shareLinksWriteQueue = createTask.catch(() => {});
+  return createTask;
+}
+
+async function isValidSharePath(pathname) {
   const match = pathname.match(/^\/share\/([^/]+)\/?$/);
   if (!match) return false;
 
   const providedTokenBuffer = Buffer.from(match[1]);
   const shareTokenBuffer = Buffer.from(shareToken);
 
-  return (
+  if (
     providedTokenBuffer.length === shareTokenBuffer.length &&
     timingSafeEqual(providedTokenBuffer, shareTokenBuffer)
-  );
+  ) {
+    return true;
+  }
+
+  const tokens = await readShareLinks();
+  return tokens.some((item) => {
+    const tokenBuffer = Buffer.from(item.token || "");
+    return providedTokenBuffer.length === tokenBuffer.length && timingSafeEqual(providedTokenBuffer, tokenBuffer);
+  });
 }
 
 function sendJson(res, status, body, headers = {}) {
@@ -187,6 +247,21 @@ async function handleApi(req, res, pathname) {
     return true;
   }
 
+  if (pathname === "/api/share-links" && req.method === "POST") {
+    const session = getSession(req);
+    if (session?.role !== "admin") {
+      sendJson(res, 403, { error: "Forbidden" });
+      return true;
+    }
+
+    try {
+      sendJson(res, 201, await createShareLink(req, session.role));
+    } catch {
+      sendJson(res, 500, { error: "Share link could not be created" });
+    }
+    return true;
+  }
+
   if (pathname.startsWith("/api/")) {
     sendJson(res, 404, { error: "Not found" });
     return true;
@@ -216,7 +291,7 @@ createServer(async (req, res) => {
   }
 
   try {
-    if (isValidSharePath(pathname)) {
+    if (await isValidSharePath(pathname)) {
       const file = await readIndexHtml({ rootBase: true });
       const headers = {
         "Content-Type": contentTypes[".html"],

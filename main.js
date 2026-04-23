@@ -11,6 +11,7 @@ const formatNumber = new Intl.NumberFormat("sl-SI", {
 });
 const formatColors = ["#e6542a", "#78bce8", "#58b87a"];
 const themeColors = ["#58b87a", "#ffc857", "#eaa0a0"];
+const commentSentiments = new Set(["positive", "neutral", "negative"]);
 
 const state = {
   data: null,
@@ -34,6 +35,7 @@ const nodes = {
   authError: document.querySelector("#authError"),
   reportShell: document.querySelector("#reportShell"),
   accessBadge: document.querySelector("#accessBadge"),
+  shareButton: document.querySelector("#shareButton"),
   logoutButton: document.querySelector("#logoutButton"),
   periodSelect: document.querySelector("#periodSelect"),
   fileInput: document.querySelector("#fileInput"),
@@ -62,6 +64,7 @@ init();
 
 async function init() {
   nodes.authForm.addEventListener("submit", handleLogin);
+  nodes.shareButton.addEventListener("click", handleShareReport);
   nodes.logoutButton.addEventListener("click", handleLogout);
   restoreStoredAuth();
   await restoreServerAuth();
@@ -237,6 +240,57 @@ async function handleLogout() {
   lockReport();
 }
 
+async function handleShareReport() {
+  const defaultLabel = "Share report";
+  nodes.shareButton.disabled = true;
+  nodes.shareButton.textContent = "Creating...";
+
+  try {
+    const response = await fetch("./api/share-links", {
+      method: "POST",
+      credentials: "same-origin"
+    });
+
+    if (!response.ok) {
+      throw new Error("Share link could not be created.");
+    }
+
+    const share = await response.json();
+    const shareUrl = new URL(share.url || share.path, window.location.origin);
+    shareUrl.hash = window.location.hash;
+
+    await copyText(shareUrl.toString());
+    nodes.shareButton.textContent = "Link copied";
+    window.setTimeout(() => {
+      nodes.shareButton.textContent = defaultLabel;
+    }, 2200);
+  } catch {
+    nodes.shareButton.textContent = "Share unavailable";
+    window.setTimeout(() => {
+      nodes.shareButton.textContent = defaultLabel;
+    }, 2600);
+  } finally {
+    nodes.shareButton.disabled = false;
+  }
+}
+
+async function copyText(value) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = value;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  document.body.append(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  textarea.remove();
+}
+
 function clearStoredAuth() {
   authStorage.removeItem(authStorageKey);
 }
@@ -251,6 +305,8 @@ function unlockReport() {
   nodes.reportShell.removeAttribute("aria-hidden");
   nodes.authGate.setAttribute("hidden", "");
   nodes.accessBadge.textContent = isAdmin() ? "Admin mode" : "View only";
+  nodes.shareButton.classList.toggle("is-hidden", !isAdmin());
+  nodes.shareButton.disabled = !isAdmin();
   nodes.fileInput.disabled = !isAdmin();
   nodes.fileInput.closest(".file-button")?.classList.toggle("is-hidden", !isAdmin());
 }
@@ -261,6 +317,9 @@ function lockReport() {
   nodes.reportShell.setAttribute("aria-hidden", "true");
   nodes.authGate.removeAttribute("hidden");
   nodes.accessBadge.textContent = "";
+  nodes.shareButton.classList.add("is-hidden");
+  nodes.shareButton.disabled = true;
+  nodes.shareButton.textContent = "Share report";
   nodes.fileInput.disabled = true;
   nodes.fileInput.closest(".file-button")?.classList.add("is-hidden");
   nodes.passwordInput.focus();
@@ -573,7 +632,16 @@ function renderBrandPanel(brands) {
           </div>
           <div class="community-strip">
             <div><span>Comment analysis</span><strong>${formatNumber.format(toNumber(report.community.commentsAnalysed))}</strong></div>
-            <div><span>Comment sentiment</span><strong>${escapeHtml(report.community.sentiment)}</strong></div>
+            <div>
+              <span>Comment sentiment</span>
+              ${
+                report.community.sentiment
+                  ? `<strong class="sentiment sentiment--${escapeHtml(report.community.sentiment)}">${escapeHtml(
+                      report.community.sentiment
+                    )}</strong>`
+                  : `<strong class="community-note">${escapeHtml(report.community.sentimentNote)}</strong>`
+              }
+            </div>
           </div>
         </article>
 
@@ -653,10 +721,20 @@ function buildBrandReport(brand, metrics) {
       { name: "Video", share: percentShare(videoPosts, posts) },
       { name: "Photo", share: percentShare(photoPosts, posts) }
     ],
-    community: report.community || {
-      commentsAnalysed: toNumber(brand.comments),
-      sentiment: toNumber(brand.comments) ? "To classify" : "Source needed"
-    }
+    community: buildCommunityFeedback(report, brand)
+  };
+}
+
+function buildCommunityFeedback(report, brand) {
+  const community = report.community || {};
+  const rawSentiment = community.sentiment ?? report.commentSentiment ?? brand.commentSentiment ?? "";
+  const sentiment = normalizeCommentSentiment(rawSentiment);
+
+  return {
+    commentsAnalysed:
+      community.commentsAnalysed ?? community.commentsAnalyzed ?? report.commentsAnalysed ?? report.commentsAnalyzed ?? brand.comments,
+    sentiment,
+    sentimentNote: sentiment ? "" : community.sentimentNote || "sentimenta ni mogoče razbrati"
   };
 }
 
@@ -1295,7 +1373,9 @@ async function readWorkbook(file) {
 
 function normalizeImportRow(row) {
   const name = valueFor(row, "brand", "name", "page", "profile");
-  return {
+  const commentSentiment = valueFor(row, "commentSentiment", "comment_sentiment", "sentiment");
+  const commentsAnalysed = numberFor(row, "commentsAnalysed", "comments_analysed", "commentsAnalyzed", "comments_analyzed");
+  const normalized = {
     name,
     brandsIncluded: splitList(valueFor(row, "brandsIncluded", "brands_included", "subBrands", "sub_brands")) || [name],
     posts: numberFor(row, "posts", "content", "pieces_of_content"),
@@ -1305,6 +1385,17 @@ function normalizeImportRow(row) {
     likes: numberFor(row, "likes"),
     comments: numberFor(row, "comments")
   };
+
+  if (commentSentiment || commentsAnalysed) {
+    normalized.report = {
+      community: {
+        commentsAnalysed: commentsAnalysed || normalized.comments,
+        sentiment: commentSentiment
+      }
+    };
+  }
+
+  return normalized;
 }
 
 function collectReviewedBrands(brands) {
@@ -1346,6 +1437,11 @@ function formatReportValue(value, suffix = "") {
 
 function formatOptionalNumber(value) {
   return hasMetricValue(value) ? formatNumber.format(toNumber(value)) : "-";
+}
+
+function normalizeCommentSentiment(value) {
+  const sentiment = String(value || "").trim().toLowerCase();
+  return commentSentiments.has(sentiment) ? sentiment : "";
 }
 
 function hasMetricValue(value) {
