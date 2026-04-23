@@ -86,6 +86,67 @@ The report data is organized around periods and creators. Important fields inclu
 
 When changing data shape, update the rendering logic in `main.js` and keep existing report views working.
 
+## Standard CSV Report Refresh Workflow
+
+When the user provides new CSV files for a reporting period, treat this as a recurring report refresh task. Do not ask the user to repeat the process instructions unless a required file or column is missing.
+
+Expected post/content CSV columns per brand:
+
+- `username`: creator or influencer handle.
+- `impressions`: post impressions.
+- `type contenta`: content format/type.
+- publication date: when the content was published.
+- `likes`: post likes.
+- `comments`: post comment count.
+- `engagement`: post engagement rate.
+- `content_caption`: caption/description for interpretation.
+- `src`: second part of the creative media URL.
+
+Expected comment CSV files:
+
+- One comment file per brand, except GA Adriatic, which can have three comment files.
+- Comment files are used for qualitative sentiment and notable feedback, not for replacing the post-level comment count unless explicitly instructed.
+
+Refresh procedure:
+
+1. Identify the brand from the file name and map it to the matching brand object in `data/report-data.json`.
+2. Parse each post/content CSV and aggregate brand metrics:
+   - `posts`: total rows/content items.
+   - `videoPosts`/`photoPosts`: normalize `type contenta` into video/reel/story/photo/static formats using the source labels.
+   - `impressions`, `likes`, `comments`: sum numeric values.
+   - Engagement rate: use `(likes + comments) / impressions * 100` for brand-level reporting when impressions are available; use the source `engagement` column as the row-level ER for ranking and sanity checks.
+3. Update each brand's `report.performance`, `report.formats`, `report.creatorActivity`, `report.creatorBreakdown`, and top-level brand metrics so the overview and brand tab stay consistent.
+4. Analyze `content_caption` for promoted models:
+   - Use `data/promoted-models.json` as the reference dictionary for brands, models, aliases, variants, URLs, and hashtags.
+   - Count posts and impressions per detected model.
+   - If a post mentions no clear model, group it as `Model unclear`.
+   - If a caption contains multiple clear models, count the post for each model only when the content genuinely promotes multiple models; otherwise choose the primary model implied by the caption.
+5. Analyze `content_caption` for content themes:
+   - Use the existing theme set as the default: `Promotions`, `Product launches`, and `Lifestyle`.
+   - Add or rename themes only when the captions clearly show a repeated category that improves client understanding.
+   - Store theme output in `report.themes` with percentage `share` values that total approximately 100.
+6. Update `report.bestContent` from the best performing rows:
+   - Prefer top content by row-level engagement rate, then impressions, then total engagement as tie-breakers.
+   - Include creator, format/media type, primary metric, and secondary metric.
+   - Build media URLs from `src` by prefixing it with `https://cdn.epidemic.co/media/`.
+   - If rendering does not yet display media URLs, still store the URL in the JSON with a clear field name such as `mediaUrl` so the UI can use it.
+7. Analyze comment CSV files for `report.community`:
+   - Determine overall sentiment as `positive`, `neutral`, or `negative`.
+   - Set `commentsAnalysed` to the number of comments actually reviewed.
+   - Summarize useful qualitative findings for the client where the current JSON/UI supports them.
+   - When useful, identify up to five representative positive comments and up to five representative negative comments, paraphrased or quoted only when appropriate and safe.
+8. When all brand files for the period are available, create or update the overall/benchmark summary across brands:
+   - Compare total activity, impressions, engagement rate, strongest formats, strongest themes, promoted models, and qualitative sentiment.
+   - Keep the summary practical and client-facing, focused on campaign learning and future content instructions.
+
+File handling rules:
+
+- Preserve the static app architecture and relative paths.
+- Treat `data/report-data.json` as the final source of truth after refresh.
+- Do not expose admin-only actions or sensitive raw data in viewer/share views.
+- Keep imported raw CSV files out of committed data unless the user explicitly asks to store them.
+- If the supplied CSV column names differ slightly, map them conservatively and mention any assumptions in the final response.
+
 ## UX Priorities
 
 - The first screen should remain the usable report experience, not a marketing page.

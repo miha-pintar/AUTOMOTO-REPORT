@@ -113,6 +113,26 @@ Osnovna struktura:
 - `periods`: seznam obdobij
 - `creators`: vrstice creatorjev za izbrano obdobje
 
+## Ustaljen postopek osveževanja reporta
+
+Ko pripraviš nove CSV datoteke, jih lahko samo dodaš v projekt in napišeš, naj osvežim report. Postopek je zapisan v `AGENTS.md`, zato navodil ni treba ponavljati.
+
+Za vsako znamko pričakujem CSV s stolpci:
+
+```text
+username, impressions, type contenta, datum objave, likes, comments, engagement, content_caption, src
+```
+
+Iz teh datotek se posodobijo metrika znamke, formati, creator activity, best performing content, promoted models in content themes. Polje `src` se uporabi kot drugi del media URL-ja:
+
+```text
+https://cdn.epidemic.co/media/<src>
+```
+
+Druga vrsta datotek so komentarji. Te se uporabljajo za kvalitativno analizo komentarjev in sentiment (`positive`, `neutral`, `negative`), ne za samo štetje komentarjev. Za GA Adriatic so lahko komentarji razdeljeni v tri datoteke.
+
+Ko so na voljo datoteke vseh znamk za obdobje, se posodobi tudi overall pregled med znamkami.
+
 ## Uvoz CSV/XLS
 
 V browserju lahko uporabis gumb `Uvozi CSV/XLS`. CSV dela lokalno, XLS/XLSX pa uporablja SheetJS knjižnico prek CDN povezave v `index.html`.
