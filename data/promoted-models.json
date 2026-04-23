@@ -23,6 +23,7 @@
         { "name": "Peugeot 306", "variants": ["GTI", "S16"], "aliases": [] },
         { "name": "Peugeot 307", "variants": ["CC"], "aliases": [] },
         { "name": "Peugeot 308", "variants": ["GTI", "PSE", "SW"], "aliases": [] },
+        { "name": "Peugeot 408", "variants": [], "aliases": [] },
         { "name": "Peugeot 405", "variants": ["Mi16", "T16"], "aliases": [] },
         { "name": "Peugeot 406", "variants": ["Coupe"], "aliases": [] },
         { "name": "Peugeot 407", "variants": ["Coupe"], "aliases": [] },
@@ -38,11 +39,14 @@
       "models": [
         { "name": "Toyota Yaris", "variants": ["GR Yaris"], "aliases": [] },
         { "name": "Toyota Aygo", "variants": ["X"], "aliases": [] },
+        { "name": "Toyota bZ4X", "variants": [], "aliases": ["Toyota bZ4X", "bZ4X", "toyotabz4x"] },
         { "name": "Toyota Corolla", "variants": ["GR Corolla", "Touring Sports"], "aliases": [] },
         { "name": "Toyota Corolla Cross", "variants": [], "aliases": [] },
         { "name": "Toyota Camry", "variants": [], "aliases": [] },
+        { "name": "Toyota Celica", "variants": [], "aliases": ["toyotacelica"] },
         { "name": "Toyota Avensis", "variants": [], "aliases": [] },
         { "name": "Toyota Prius", "variants": ["Plug-in"], "aliases": [] },
+        { "name": "Toyota Mirai", "variants": [], "aliases": ["toyotamirai"] },
         { "name": "Toyota C-HR", "variants": ["Hybrid", "Plug-in"], "aliases": [] },
         { "name": "Toyota RAV4", "variants": ["Hybrid", "Plug-in"], "aliases": [] },
         { "name": "Toyota Highlander", "variants": ["Hybrid"], "aliases": [] },
@@ -58,6 +62,7 @@
       "models": [
         { "name": "Volkswagen Polo", "variants": ["GTI", "R WRC"], "aliases": [] },
         { "name": "Volkswagen Golf", "variants": ["GTI", "GTD", "GTE", "R", "R32"], "aliases": [] },
+        { "name": "Volkswagen California", "variants": [], "aliases": ["VW California", "vwcalifornia", "California"] },
         { "name": "Volkswagen Passat", "variants": ["R-Line", "Alltrack"], "aliases": [] },
         { "name": "Volkswagen Jetta", "variants": ["GLI"], "aliases": [] },
         { "name": "Volkswagen Bora", "variants": [], "aliases": [] },
@@ -72,7 +77,9 @@
         { "name": "Volkswagen Touran", "variants": [], "aliases": [] },
         { "name": "Volkswagen ID.3", "variants": ["GTX"], "aliases": [] },
         { "name": "Volkswagen ID.4", "variants": ["GTX"], "aliases": [] },
-        { "name": "Volkswagen ID.5", "variants": ["GTX"], "aliases": [] }
+        { "name": "Volkswagen ID.5", "variants": ["GTX"], "aliases": [] },
+        { "name": "Volkswagen ID. Cross", "variants": [], "aliases": ["ID. cross", "ID cross", "idcross"] },
+        { "name": "Volkswagen Tayron", "variants": [], "aliases": ["Tayron"] }
       ]
     },
     {
@@ -80,6 +87,7 @@
       "brandAliases": ["Skoda"],
       "models": [
         { "name": "Škoda Fabia", "variants": ["RS", "Monte Carlo"], "aliases": [] },
+        { "name": "Škoda Felicia", "variants": ["Fun"], "aliases": ["Felicia Fun", "feliciafun"] },
         { "name": "Škoda Octavia", "variants": ["RS", "Scout"], "aliases": [] },
         { "name": "Škoda Superb", "variants": ["Laurin & Klement", "Sportline"], "aliases": [] },
         { "name": "Škoda Rapid", "variants": ["Spaceback"], "aliases": [] },
@@ -88,7 +96,9 @@
         { "name": "Škoda Karoq", "variants": ["Sportline"], "aliases": [] },
         { "name": "Škoda Kodiaq", "variants": ["RS", "Scout", "Sportline"], "aliases": [] },
         { "name": "Škoda Yeti", "variants": ["Outdoor"], "aliases": [] },
-        { "name": "Škoda Enyaq", "variants": ["RS", "Coupe"], "aliases": [] }
+        { "name": "Škoda Enyaq", "variants": ["RS", "Coupe"], "aliases": ["Enyak", "skodaenyak"] },
+        { "name": "Škoda Elroq", "variants": [], "aliases": ["Elroq"] },
+        { "name": "Škoda Vision O", "variants": [], "aliases": ["Vision O"] }
       ]
     },
     {

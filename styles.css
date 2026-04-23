@@ -997,6 +997,20 @@ h3 {
     #222222;
 }
 
+.content-card__media img,
+.content-card__media video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: cover;
+}
+
+.content-card__media video {
+  background: #0f0f0f;
+}
+
 .content-card__media span {
   position: relative;
   z-index: 1;
@@ -1158,6 +1172,44 @@ h3 {
   margin-top: 18px;
   font-size: clamp(28px, 3.2vw, 42px);
   line-height: 1;
+}
+
+.community-details {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+}
+
+.community-details > p {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 18px;
+  background: #161616;
+  color: var(--accent-soft);
+}
+
+.comment-examples {
+  min-width: 0;
+  padding: 18px;
+  background: #161616;
+}
+
+.comment-examples h4 {
+  margin: 0 0 12px;
+  color: var(--accent-soft);
+  font-size: 14px;
+}
+
+.comment-examples ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .community-note {
@@ -1373,7 +1425,8 @@ tbody tr:hover {
   }
 
   .content-card,
-  .community-strip {
+  .community-strip,
+  .community-details {
     grid-template-columns: 1fr;
   }
 

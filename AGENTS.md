@@ -111,6 +111,7 @@ Refresh procedure:
 
 1. Identify the brand from the file name and map it to the matching brand object in `data/report-data.json`.
 2. Parse each post/content CSV and aggregate brand metrics:
+   - Before aggregation, remove duplicated feed `Post` rows when Instagram exports the same creative as both a feed post and a Reel. Treat rows as duplicates when the feed `Post` and Reel have the same publication date/time, the same media ID/number in `src`, and the same `content_caption`; keep the Reel and remove the feed `Post`.
    - `posts`: total rows/content items.
    - `videoPosts`/`photoPosts`: normalize `type contenta` into video/reel/story/photo/static formats using the source labels.
    - `impressions`, `likes`, `comments`: sum numeric values.
@@ -119,15 +120,19 @@ Refresh procedure:
 4. Analyze `content_caption` for promoted models:
    - Use `data/promoted-models.json` as the reference dictionary for brands, models, aliases, variants, URLs, and hashtags.
    - Count posts and impressions per detected model.
-   - If a post mentions no clear model, group it as `Model unclear`.
+   - If a post mentions no clear model, group it as `General promotion / model unclear`.
    - If a caption contains multiple clear models, count the post for each model only when the content genuinely promotes multiple models; otherwise choose the primary model implied by the caption.
 5. Analyze `content_caption` for content themes:
    - Use the existing theme set as the default: `Promotions`, `Product launches`, and `Lifestyle`.
    - Add or rename themes only when the captions clearly show a repeated category that improves client understanding.
    - Store theme output in `report.themes` with percentage `share` values that total approximately 100.
 6. Update `report.bestContent` from the best performing rows:
-   - Prefer top content by row-level engagement rate, then impressions, then total engagement as tie-breakers.
-   - Include creator, format/media type, primary metric, and secondary metric.
+   - Always use two slots: left is `Best performing post` and right is `Best performing story`.
+   - Choose the best performing post/reel/photo by highest impressions, excluding Stories.
+   - Choose the best performing Story by highest impressions.
+   - For the post slot, show impressions and engagement rate.
+   - For the Story slot, show impressions and impression rate, calculated as `impressions / followers * 100`.
+   - Include creator, format/media type, metric labels, and metric values.
    - Build media URLs from `src` by prefixing it with `https://cdn.epidemic.co/media/`.
    - If rendering does not yet display media URLs, still store the URL in the JSON with a clear field name such as `mediaUrl` so the UI can use it.
 7. Analyze comment CSV files for `report.community`:

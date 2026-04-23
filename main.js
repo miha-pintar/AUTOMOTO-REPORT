@@ -643,6 +643,7 @@ function renderBrandPanel(brands) {
               }
             </div>
           </div>
+          ${renderCommunityDetails(report.community)}
         </article>
 
         <article class="brand-report-block brand-report-block--wide">
@@ -852,16 +853,57 @@ function renderBestContent(item, brandIndex, contentIndex) {
   return `
     <div class="content-card" data-brand-index="${escapeHtml(brandIndex)}" data-content-index="${escapeHtml(contentIndex)}">
       <div class="content-card__media">
+        ${renderBestContentMedia(item, mediaLabel)}
         <span>${escapeHtml(mediaLabel)}</span>
       </div>
       <div>
         <h4>${escapeHtml(item.label)}</h4>
         <p>${escapeHtml(item.creator || "Source needed")}</p>
         <dl>
-          <div><dt>Primary</dt><dd>${escapeHtml(item.primaryMetric)}</dd></div>
-          <div><dt>Secondary</dt><dd>${escapeHtml(item.secondaryMetric)}</dd></div>
+          <div><dt>${escapeHtml(item.primaryLabel || "Primary")}</dt><dd>${escapeHtml(item.primaryMetric)}</dd></div>
+          <div><dt>${escapeHtml(item.secondaryLabel || "Secondary")}</dt><dd>${escapeHtml(item.secondaryMetric)}</dd></div>
         </dl>
       </div>
+    </div>
+  `;
+}
+
+function renderBestContentMedia(item, mediaLabel) {
+  if (!item.mediaUrl) return "";
+  const url = escapeHtml(item.mediaUrl);
+  const alt = escapeHtml(`${mediaLabel} by ${item.creator || "creator"}`);
+  const isVideo = /\.(mp4|webm|mov)(\?|#|$)/i.test(item.mediaUrl);
+
+  if (isVideo) {
+    return `<video src="${url}" muted playsinline preload="metadata" controls></video>`;
+  }
+
+  return `<img src="${url}" alt="${alt}" loading="lazy">`;
+}
+
+function renderCommunityDetails(community) {
+  const positiveExamples = Array.isArray(community.positiveExamples) ? community.positiveExamples.slice(0, 5) : [];
+  const negativeExamples = Array.isArray(community.negativeExamples) ? community.negativeExamples.slice(0, 5) : [];
+  const hasDetails = community.sentimentSummary || positiveExamples.length || negativeExamples.length;
+  if (!hasDetails) return "";
+
+  return `
+    <div class="community-details">
+      ${community.sentimentSummary ? `<p>${escapeHtml(community.sentimentSummary)}</p>` : ""}
+      ${renderCommentExampleList("Positive signals", positiveExamples)}
+      ${renderCommentExampleList("Negative signals", negativeExamples)}
+    </div>
+  `;
+}
+
+function renderCommentExampleList(title, comments) {
+  if (!comments.length) return "";
+  return `
+    <div class="comment-examples">
+      <h4>${escapeHtml(title)}</h4>
+      <ul>
+        ${comments.map((comment) => `<li>${escapeHtml(comment)}</li>`).join("")}
+      </ul>
     </div>
   `;
 }
