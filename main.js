@@ -735,7 +735,10 @@ function buildCommunityFeedback(report, brand) {
     commentsAnalysed:
       community.commentsAnalysed ?? community.commentsAnalyzed ?? report.commentsAnalysed ?? report.commentsAnalyzed ?? brand.comments,
     sentiment,
-    sentimentNote: sentiment ? "" : community.sentimentNote || "sentimenta ni mogoče razbrati"
+    sentimentNote: sentiment ? "" : community.sentimentNote || "sentimenta ni mogoče razbrati",
+    sentimentSummary: community.sentimentSummary || "",
+    positiveExamples: Array.isArray(community.positiveExamples) ? community.positiveExamples : [],
+    negativeExamples: Array.isArray(community.negativeExamples) ? community.negativeExamples : []
   };
 }
 
@@ -889,7 +892,7 @@ function renderBestContentMedia(item, mediaLabel) {
   return `<img src="${url}" alt="${alt}" loading="lazy">`;
 }
 
-function renderCommunityDetails(community) {
+function renderCommunityDetails(community = {}) {
   const positiveExamples = Array.isArray(community.positiveExamples) ? community.positiveExamples.slice(0, 5) : [];
   const negativeExamples = Array.isArray(community.negativeExamples) ? community.negativeExamples.slice(0, 5) : [];
   const hasDetails = community.sentimentSummary || positiveExamples.length || negativeExamples.length;
@@ -1011,6 +1014,8 @@ function renderCompetitorMap(brands) {
     state.competitorChart.update();
     return;
   }
+
+  window.Chart.getChart?.(nodes.competitorChart)?.destroy();
 
   state.competitorChart = new window.Chart(nodes.competitorChart, {
     type: "scatter",
@@ -1353,7 +1358,7 @@ function scatterPointFill(context) {
   const meta = chart.getDatasetMeta(context.datasetIndex);
   const point = meta?.data?.[context.dataIndex];
 
-  if (!chartArea || !point) return "#e6542a";
+  if (!chartArea || !point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return "#e6542a";
 
   const gradient = ctx.createRadialGradient(point.x - 3, point.y - 4, 1, point.x, point.y, 11);
   gradient.addColorStop(0, "#ffc857");

@@ -103,7 +103,7 @@ function signSessionPayload(encodedPayload) {
 
 async function readIndexHtml({ rootBase = false } = {}) {
   const file = await readFile(join(root, "index.html"), "utf8");
-  return rootBase ? file.replace("<head>", '<head>\n    <base href="/" />') : file;
+  return rootBase ? file.replace(/<head>/i, '<head>\n    <base href="/" />') : file;
 }
 
 async function readShareLinks() {
