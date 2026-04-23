@@ -3,7 +3,7 @@ const authStorageKey = "automoto-report-auth";
 const authStorage = window.localStorage;
 const defaultPasswords = {
   admin: "Epi123!",
-  viewer: "GAreport997!"
+  viewer: ["GAreport997!", "IAB227!"]
 };
 
 const formatNumber = new Intl.NumberFormat("sl-SI", {
@@ -211,7 +211,7 @@ async function loginWithServer(password) {
 
 function roleForPassword(password) {
   if (password === defaultPasswords.admin) return "admin";
-  if (password === defaultPasswords.viewer) return "viewer";
+  if (defaultPasswords.viewer.includes(password)) return "viewer";
   return null;
 }
 

@@ -6,12 +6,16 @@ import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 const port = Number(process.env.PORT || 5173);
 const root = resolve(process.cwd());
 const sessionTtlSeconds = Number(process.env.SESSION_DAYS || 180) * 24 * 60 * 60;
+const defaultViewerPasswords = ["GAreport997!", "IAB227!"];
+const viewerPasswords = process.env.VIEWER_PASSWORDS
+  ? process.env.VIEWER_PASSWORDS.split(",").map((value) => value.trim()).filter(Boolean)
+  : [process.env.VIEWER_PASSWORD || defaultViewerPasswords[0], ...defaultViewerPasswords.slice(1)];
 const passwords = {
   admin: process.env.ADMIN_PASSWORD || "Epi123!",
-  viewer: process.env.VIEWER_PASSWORD || "GAreport997!"
+  viewer: viewerPasswords
 };
 const shareToken = process.env.SHARE_TOKEN || "ga-adriatic-2026-share-a8f4c2d9";
-const sessionSecret = process.env.SESSION_SECRET || `${passwords.admin}:${passwords.viewer}:automoto-report`;
+const sessionSecret = process.env.SESSION_SECRET || `${passwords.admin}:${passwords.viewer.join(":")}:automoto-report`;
 const shareLinksPath = join(root, "data", "share-links.json");
 let shareLinksWriteQueue = Promise.resolve();
 
@@ -222,7 +226,7 @@ async function handleApi(req, res, pathname) {
   if (pathname === "/api/login" && req.method === "POST") {
     try {
       const body = await readJsonBody(req);
-      const role = body.password === passwords.admin ? "admin" : body.password === passwords.viewer ? "viewer" : null;
+      const role = body.password === passwords.admin ? "admin" : passwords.viewer.includes(body.password) ? "viewer" : null;
 
       if (!role) {
         sendJson(res, 401, { error: "Invalid password" });

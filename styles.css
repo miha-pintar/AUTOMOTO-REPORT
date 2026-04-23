@@ -1184,6 +1184,8 @@ h3 {
 
 .community-details > p {
   grid-column: 1 / -1;
+  max-width: none;
+  width: 100%;
   margin: 0;
   padding: 18px;
   background: #161616;
@@ -1194,6 +1196,10 @@ h3 {
   min-width: 0;
   padding: 20px;
   background: #161616;
+}
+
+.comment-examples--constructive:last-child {
+  grid-column: 1 / -1;
 }
 
 .comment-examples h4 {

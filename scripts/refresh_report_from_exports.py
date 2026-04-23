@@ -361,16 +361,29 @@ def media_identifier(row):
     return Path(src).stem
 
 
+def normalized_caption(row):
+    return re.sub(r"\s+", " ", norm(row.get("content_caption"))).strip().lower()
+
+
+def normalized_datetime(row):
+    return norm(row_value(row, "date", "publication date", "publication_date", "published_at", "published at")).strip()
+
+
+def normalized_username(row):
+    return norm(row.get("username")).strip().lower()
+
+
 def row_signature(row):
     return (
-        norm(row_value(row, "date", "publication date", "publication_date", "published_at", "published at")),
-        media_identifier(row),
-        str(row.get("content_caption") or ""),
+        normalized_username(row),
+        normalized_datetime(row),
+        normalized_caption(row),
     )
 
 
 def interaction_signature(row):
     return (
+        norm(row.get("impressions")),
         norm(row.get("likes")),
         norm(row.get("comments")),
         norm(row.get("engagement")),
@@ -378,28 +391,46 @@ def interaction_signature(row):
 
 
 def is_feed_post(row):
-    return norm(row.get("type")).lower() == "post"
+    return media_type(row) == "Post"
 
 
 def is_reel(row):
-    return norm(row.get("src")).lower().endswith(".mp4") or "reel" in norm(row.get("type")).lower()
+    return media_type(row) == "Reel"
 
 
 def is_exported_reel(row):
-    return "reel" in norm(row.get("type")).lower()
+    return media_type(row) == "Reel"
+
+
+def same_media_asset(left, right):
+    left_id = media_identifier(left)
+    right_id = media_identifier(right)
+    if not left_id or not right_id:
+        return True
+    return left_id == right_id
+
+
+def is_duplicate_post_reel_pair(post_row, reel_row):
+    return (
+        row_signature(post_row) == row_signature(reel_row)
+        and interaction_signature(post_row) == interaction_signature(reel_row)
+        and same_media_asset(post_row, reel_row)
+    )
 
 
 def remove_feed_post_reel_duplicates(rows):
-    reel_signatures = {
-        (row_signature(row), interaction_signature(row))
-        for row in rows
-        if is_exported_reel(row)
-    }
     clean_rows = []
     removed = 0
     for row in rows:
-        if is_feed_post(row) and (row_signature(row), interaction_signature(row)) in reel_signatures:
-            removed += 1
+        if is_reel(row):
+            for post_row in rows:
+                if post_row is row or not is_feed_post(post_row):
+                    continue
+                if is_duplicate_post_reel_pair(post_row, row):
+                    removed += 1
+                    break
+            else:
+                clean_rows.append(row)
             continue
         clean_rows.append(row)
     return clean_rows, removed
@@ -514,9 +545,13 @@ def media_type(row):
     src = norm(row.get("src")).lower()
     if "story" in content_type:
         return "Story"
-    if src.endswith(".mp4") or "reel" in content_type or "video" in content_type:
+    if "post" in content_type or "photo" in content_type or "static" in content_type:
+        return "Post"
+    if "reel" in content_type or "video" in content_type:
         return "Reel"
-    return "Photo"
+    if src.endswith(".mp4"):
+        return "Reel"
+    return "Post"
 
 
 def compact(value):
@@ -610,7 +645,7 @@ def build_post_report(rows, model_terms, included_brands):
         "metrics": {
             "posts": total_posts,
             "videoPosts": formats["Reel"] + formats["Story"],
-            "photoPosts": formats["Photo"],
+            "photoPosts": formats["Post"],
             "impressions": impressions,
             "likes": likes,
             "comments": comments,

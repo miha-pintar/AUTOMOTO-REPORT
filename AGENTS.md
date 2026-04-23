@@ -111,9 +111,10 @@ Refresh procedure:
 
 1. Identify the brand from the file name and map it to the matching brand object in `data/report-data.json`.
 2. Parse each post/content CSV and aggregate brand metrics:
-   - Before aggregation, remove duplicated feed `Post` rows when Instagram exports the same creative as both a feed post and a Reel. Treat rows as duplicates only when the feed `Post` and Reel have the same publication date/time, the same media ID/number in `src`, a completely identical `content_caption`, and matching source engagement fields; keep the Reel and remove the feed `Post`.
+   - Before aggregation, normalize the content format from `type contenta` first. Use the source label as the primary truth: `Story` stays `Story`, `Reel` stays `Reel`, and feed `Post` stays `Post` even when the `src` asset is an `.mp4`. Only use `src` or other fallbacks when the source type label is blank or ambiguous.
+   - After format normalization, remove duplicated `Post`/`Reel` pairs that represent the same creative exported twice. Treat rows as duplicates when they have the same creator, the same publication date/time, the same or equivalent media identifier in `src` when available, a materially identical `content_caption`, and matching delivery metrics (`impressions`, `likes`, `comments`, and source `engagement`, allowing only trivial formatting differences). For these duplicated pairs, keep the `Post` row and remove the duplicate `Reel` row so final content totals and format splits match the feed reality.
    - `posts`: total rows/content items.
-   - `videoPosts`/`photoPosts`: normalize `type contenta` into video/reel/story/photo/static formats using the source labels.
+   - `videoPosts`/`photoPosts`: store `videoPosts` as `stories + reels` and `photoPosts` as feed `posts`, while `report.formats` should explicitly show `Story`, `Post`, and `Reel`.
    - `impressions`, `likes`, `comments`: sum numeric values.
    - Engagement rate: use `(likes + comments) / impressions * 100` for brand-level reporting when impressions are available; use the source `engagement` column as the row-level ER for ranking and sanity checks.
 3. Update each brand's `report.performance`, `report.formats`, `report.creatorActivity`, `report.creatorBreakdown`, and top-level brand metrics so the overview and brand tab stay consistent.
