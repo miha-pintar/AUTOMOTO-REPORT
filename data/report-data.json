@@ -1,0 +1,134 @@
+{
+  "brand": "Instagram activity benchmark: Automotive",
+  "client": "Instagram activity benchmark",
+  "activePeriodId": "2026-jan",
+  "periods": [
+    {
+      "id": "2026-jan",
+      "label": "January 2026",
+      "startDate": "2026-01-01",
+      "endDate": "2026-01-31",
+      "market": "Slovenia",
+      "summary": "Benchmark overview of Instagram publishing volume and audience response across the selected automotive brands.",
+      "brands": [
+        {
+          "name": "GA Adriatic",
+          "brandsIncluded": ["Renault", "Dacia", "Alpine"],
+          "posts": 18,
+          "videoPosts": 9,
+          "photoPosts": 9,
+          "impressions": 211000,
+          "likes": 49500,
+          "comments": 1900,
+          "report": {
+            "contentPreviewUrl": "https://be.epidemic.co/campaigns/36713?share=ngUFb6Qx2yYzoHxxD66f5t",
+            "summary": "During the observed period, the brand collaborated with active influencers and generated strong visibility mainly through short formats. Content output was led by Stories and Reels, with measurable audience response across promoted models.",
+            "formats": [
+              { "type": "Reels", "posts": 3, "share": 30 },
+              { "type": "Stories", "posts": 7, "share": 70 },
+              { "type": "Photos", "posts": 0, "share": 0 }
+            ],
+            "performance": [
+              { "metric": "Impressions", "total": 21000, "average": 3000 },
+              { "metric": "Likes", "total": 382, "average": 55 },
+              { "metric": "Comments", "total": 340, "average": 7 },
+              { "metric": "Engagement", "total": 384, "average": 42 },
+              { "metric": "Engagement rate", "total": 3.3, "average": 1.1, "suffix": "%" }
+            ],
+            "influencerActivity": {
+              "activeInfluencers": 8,
+              "averagePosts": 5,
+              "mostActive": {
+                "name": "@ula_p_v",
+                "posts": 7,
+                "url": "https://www.instagram.com/ula_p_v"
+              }
+            },
+            "bestContent": [
+              {
+                "label": "Best performing reel",
+                "creator": "@ula_p_v",
+                "primaryMetric": "297",
+                "secondaryMetric": "19.7k",
+                "mediaType": "Reel"
+              },
+              {
+                "label": "Best performing story",
+                "creator": "@ula_p_v",
+                "primaryMetric": "19.7k",
+                "secondaryMetric": "Stories",
+                "mediaType": "Story"
+              }
+            ],
+            "promotedModels": [
+              { "model": "Renault 5", "posts": 1, "impressions": 3000 },
+              { "model": "Renault Clio", "posts": 4, "impressions": 3000 },
+              { "model": "Model unclear", "posts": 7, "impressions": 11000 }
+            ],
+            "themes": [
+              { "name": "Promotions", "share": 43 },
+              { "name": "Product launches", "share": 38 },
+              { "name": "Lifestyle", "share": 19 }
+            ],
+            "community": {
+              "commentsAnalysed": 297,
+              "sentiment": "Positive"
+            }
+          }
+        },
+        {
+          "name": "Volkswagen Slovenija",
+          "brandsIncluded": ["VW"],
+          "posts": 21,
+          "videoPosts": 10,
+          "photoPosts": 11,
+          "impressions": 204000,
+          "likes": 52200,
+          "comments": 2300,
+          "report": {
+            "contentPreviewUrl": "https://be.epidemic.co/campaigns/38960?share=Fq5vDws2HM6zWDX5Cm4f2E"
+          }
+        },
+        {
+          "name": "Škoda Slovenija",
+          "brandsIncluded": ["Škoda"],
+          "posts": 14,
+          "videoPosts": 6,
+          "photoPosts": 8,
+          "impressions": 128000,
+          "likes": 24500,
+          "comments": 980,
+          "report": {
+            "contentPreviewUrl": "https://be.epidemic.co/campaigns/38958?share=GexvrfTPkzZoWxwpPxbmJb"
+          }
+        },
+        {
+          "name": "Toyota Slovenija",
+          "brandsIncluded": ["Toyota"],
+          "posts": 13,
+          "videoPosts": 5,
+          "photoPosts": 8,
+          "impressions": 104000,
+          "likes": 5300,
+          "comments": 250,
+          "report": {
+            "contentPreviewUrl": "https://be.epidemic.co/campaigns/38959?share=dMvFTGhe2rcfva4vJHUzLp"
+          }
+        },
+        {
+          "name": "Peugeot Slovenija",
+          "brandsIncluded": ["Peugeot"],
+          "posts": 11,
+          "videoPosts": 7,
+          "photoPosts": 4,
+          "impressions": 86000,
+          "likes": 9800,
+          "comments": 420,
+          "report": {
+            "contentPreviewUrl": "https://be.epidemic.co/campaigns/38957?share=BqTa5sjbAdBdCH8Y6hJNL4"
+          }
+        }
+      ]
+    }
+  ]
+}

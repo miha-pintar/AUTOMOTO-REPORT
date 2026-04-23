@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="sl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Automoto Report</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js" defer></script>
+    <script type="module" src="/main.js"></script>
+  </head>
+  <body>
+    <div class="report-shell">
+      <header class="report-header">
+        <div class="hero__visual" aria-hidden="true">
+          <div class="track"></div>
+          <div class="phone phone--front">
+            <div class="phone__bar"></div>
+            <div class="story story--active"></div>
+            <div class="story"></div>
+            <div class="post post--large"></div>
+            <div class="post-row">
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+          </div>
+          <div class="phone phone--back">
+            <div class="phone__bar"></div>
+            <div class="metric-line"></div>
+            <div class="metric-line metric-line--short"></div>
+            <div class="mini-chart">
+              <canvas id="heroMiniChart" aria-label="Activity preview chart"></canvas>
+            </div>
+          </div>
+        </div>
+        <nav class="topbar" aria-label="Report controls">
+          <strong>Automoto Report</strong>
+          <div class="topbar__actions">
+            <label class="file-button">
+              <input id="fileInput" type="file" accept=".csv,.xls,.xlsx" />
+              Uvozi CSV/XLS
+            </label>
+            <select id="periodSelect" aria-label="Izberi obdobje"></select>
+          </div>
+        </nav>
+        <div class="title-block">
+          <p id="clientLabel" class="eyebrow">Instagram activity benchmark</p>
+          <h1 id="reportTitle">Instagram activity benchmark: Automotive</h1>
+          <div class="title-meta">
+            <span><strong>Period:</strong> <b id="periodLabel"></b></span>
+            <span><strong>Market:</strong> <b id="marketLabel"></b></span>
+          </div>
+          <p id="brandLabel" class="brand-line"></p>
+        </div>
+      </header>
+
+      <main class="report-workspace">
+        <nav id="reportTabs" class="report-tabs" aria-label="Report sections"></nav>
+
+        <section id="overviewPanel" class="tab-panel is-active" data-panel="overview">
+          <section id="executive-summary" class="section section--summary" aria-labelledby="summaryTitle">
+            <h2 id="summaryTitle">Overview</h2>
+            <p id="periodSummary" class="summary-note"></p>
+            <p id="contentCount" class="content-created"></p>
+
+            <div id="kpis" class="kpi-grid"></div>
+
+            <div class="summary-layout">
+              <div id="highlights" class="highlight-list"></div>
+              <article id="content-type" class="chart-panel" aria-labelledby="contentTypeTitle">
+                <h3 id="contentTypeTitle">Posts by the type</h3>
+                <div class="chart-wrap">
+                  <canvas id="typeChart" aria-label="Posts by type chart"></canvas>
+                </div>
+                <p id="chartFootnote" class="chart-footnote"></p>
+              </article>
+            </div>
+          </section>
+
+          <section id="brand-overview" class="section section--brands" aria-labelledby="brandsTitle">
+            <h2 id="brandsTitle">Brand overview</h2>
+            <div id="brandList" class="brand-grid"></div>
+          </section>
+        </section>
+
+        <section id="brandPanel" class="tab-panel" data-panel="brand" aria-live="polite"></section>
+
+        <section id="competitorPanel" class="tab-panel" data-panel="competitor">
+          <section class="section section--competitor" aria-labelledby="competitorTitle">
+            <h2 id="competitorTitle">Competitor map</h2>
+            <p class="summary-note">Publishing volume is mapped against engagement rate for the selected period.</p>
+            <div id="competitorMap" class="competitor-map" aria-label="Competitor map">
+              <canvas id="competitorChart"></canvas>
+            </div>
+          </section>
+        </section>
+
+        <section id="sourcePanel" class="tab-panel" data-panel="source">
+          <section id="source-data" class="section section--table" aria-labelledby="tableTitle">
+            <h2 id="tableTitle">Source data</h2>
+            <div class="table-shell">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Brand</th>
+                    <th>Posts</th>
+                    <th>Video</th>
+                    <th>Photo</th>
+                    <th>Impressions</th>
+                    <th>Likes</th>
+                    <th>Comments</th>
+                    <th>ER</th>
+                  </tr>
+                </thead>
+                <tbody id="dataRows"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
