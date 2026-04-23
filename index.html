@@ -113,33 +113,70 @@
         <section id="competitorPanel" class="tab-panel" data-panel="competitor">
           <section class="section section--competitor" aria-labelledby="competitorTitle">
             <h2 id="competitorTitle">Competitor map</h2>
-            <p class="summary-note">Publishing volume is mapped against engagement rate for the selected period.</p>
-            <div id="competitorMap" class="competitor-map" aria-label="Competitor map">
-              <canvas id="competitorChart"></canvas>
+            <p class="summary-note">Compare brand performance across the selected period by content volume, reach, and engagement rate.</p>
+            <div class="competitor-map-grid">
+              <article class="competitor-map-card">
+                <header class="competitor-map-card__header">
+                  <h3>Publishing volume vs. ER</h3>
+                  <p class="summary-note">Shows whether higher posting activity also drove stronger engagement.</p>
+                </header>
+                <div id="competitorMap" class="competitor-map" aria-label="Competitor map by publishing volume">
+                  <canvas id="competitorChart"></canvas>
+                </div>
+              </article>
+              <article class="competitor-map-card">
+                <header class="competitor-map-card__header">
+                  <h3>Impressions vs. ER</h3>
+                  <p class="summary-note">Shows how efficiently each brand converted reach into engagement.</p>
+                </header>
+                <div id="competitorImpressionsMap" class="competitor-map" aria-label="Competitor map by impressions">
+                  <canvas id="competitorImpressionsChart"></canvas>
+                </div>
+              </article>
+              <article class="competitor-map-card competitor-map-card--wide">
+                <header class="competitor-map-card__header">
+                  <h3>Influencer distribution by brand</h3>
+                  <p class="summary-note">Bubble size shows how many pieces of content each influencer created for a specific brand.</p>
+                </header>
+                <div
+                  id="competitorInfluencerMap"
+                  class="competitor-map competitor-map--influencers"
+                  aria-label="Influencer content distribution by brand"
+                >
+                  <canvas id="competitorInfluencerChart"></canvas>
+                </div>
+              </article>
             </div>
-          </section>
-        </section>
-
-        <section id="sourcePanel" class="tab-panel" data-panel="source">
-          <section id="source-data" class="section section--table" aria-labelledby="tableTitle">
-            <h2 id="tableTitle">Source data</h2>
-            <div class="table-shell">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Brand</th>
-                    <th>Posts</th>
-                    <th>Video</th>
-                    <th>Photo</th>
-                    <th>Impressions</th>
-                    <th>Likes</th>
-                    <th>Comments</th>
-                    <th>ER</th>
-                  </tr>
-                </thead>
-                <tbody id="dataRows"></tbody>
-              </table>
-            </div>
+            <article class="competitor-data-shell" aria-labelledby="competitorDataTitle">
+              <header class="competitor-data-shell__header">
+                <div>
+                  <p class="eyebrow">Source data</p>
+                  <h3 id="competitorDataTitle">Brand input overview</h3>
+                  <p class="summary-note">Raw brand totals stay in the same workspace so the map and its source metrics can be reviewed together.</p>
+                </div>
+                <div id="competitorDataSummary" class="competitor-data-summary" aria-label="Competitor source data summary"></div>
+              </header>
+              <div class="competitor-data-grid">
+                <section class="competitor-table-panel" aria-labelledby="competitorPostsTitle">
+                  <div class="competitor-table-panel__header">
+                    <h4 id="competitorPostsTitle">Posts</h4>
+                    <p class="summary-note">Brand-level output and efficiency across all published content.</p>
+                  </div>
+                  <div class="competitor-table-wrap">
+                    <table id="competitorPostsTable" class="competitor-table competitor-table--matrix"></table>
+                  </div>
+                </section>
+                <section class="competitor-table-panel" aria-labelledby="competitorInfluencersTitle">
+                  <div class="competitor-table-panel__header">
+                    <h4 id="competitorInfluencersTitle">Influencers</h4>
+                    <p class="summary-note">Creator participation and posting depth across the selected period.</p>
+                  </div>
+                  <div class="competitor-table-wrap">
+                    <table id="competitorInfluencerTable" class="competitor-table competitor-table--matrix"></table>
+                  </div>
+                </section>
+              </div>
+            </article>
           </section>
         </section>
       </main>

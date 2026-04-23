@@ -12,6 +12,38 @@ const formatNumber = new Intl.NumberFormat("sl-SI", {
 const formatColors = ["#e6542a", "#78bce8", "#58b87a"];
 const themeColors = ["#58b87a", "#ffc857", "#eaa0a0"];
 const commentSentiments = new Set(["positive", "neutral", "negative"]);
+const brandLogos = [
+  {
+    aliases: ["ga adriatic"],
+    src: "./assets/content/GA-logo.png",
+    alt: "GA Adriatic logo",
+    background: "light"
+  },
+  {
+    aliases: ["vw", "volkswagen"],
+    src: "./assets/content/VW-logo.png",
+    alt: "VW logo",
+    background: "light"
+  },
+  {
+    aliases: ["toyota", "toyota slovenija"],
+    src: "./assets/content/Toyota-logo.png",
+    alt: "Toyota logo",
+    background: "light"
+  },
+  {
+    aliases: ["peugeot", "peugeot slovenija"],
+    src: "./assets/content/Peugeot-logo.png",
+    alt: "Peugeot logo",
+    background: "dark"
+  },
+  {
+    aliases: ["skoda", "skoda slovenija", "škoda", "škoda slovenija"],
+    src: "./assets/content/skoda-logo.png",
+    alt: "Skoda logo",
+    background: "light"
+  }
+];
 
 const state = {
   data: null,
@@ -26,7 +58,9 @@ const state = {
   heroMiniChart: null,
   brandFormatChart: null,
   brandThemeChart: null,
-  competitorChart: null
+  competitorChart: null,
+  competitorImpressionsChart: null,
+  competitorInfluencerChart: null
 };
 
 let currentTabRoutes = new Map();
@@ -62,7 +96,13 @@ const nodes = {
   brandPanel: document.querySelector("#brandPanel"),
   competitorMap: document.querySelector("#competitorMap"),
   competitorChart: document.querySelector("#competitorChart"),
-  dataRows: document.querySelector("#dataRows"),
+  competitorImpressionsMap: document.querySelector("#competitorImpressionsMap"),
+  competitorImpressionsChart: document.querySelector("#competitorImpressionsChart"),
+  competitorInfluencerMap: document.querySelector("#competitorInfluencerMap"),
+  competitorInfluencerChart: document.querySelector("#competitorInfluencerChart"),
+  competitorDataSummary: document.querySelector("#competitorDataSummary"),
+  competitorPostsTable: document.querySelector("#competitorPostsTable"),
+  competitorInfluencerTable: document.querySelector("#competitorInfluencerTable"),
   typeChart: document.querySelector("#typeChart"),
   heroMiniChart: document.querySelector("#heroMiniChart")
 };
@@ -389,7 +429,7 @@ function render() {
   nodes.periodSummary.textContent = period.summary;
   nodes.periodLabel.textContent = periodRange;
   nodes.marketLabel.textContent = period.market || "Market not set";
-  nodes.brandLabel.textContent = `Brands: ${reviewedBrands.join(", ")}`;
+  nodes.brandLabel.innerHTML = renderBrandLine(reviewedBrands);
   nodes.contentCount.innerHTML = `<strong>${formatNumber.format(totals.posts)}</strong> pieces of content were created.`;
   syncComparisonBrandOptions(brands);
   syncComparisonControls();
@@ -440,7 +480,7 @@ function render() {
       (brand) => `
         <article class="brand-row">
           <div>
-            <h3>${escapeHtml(brand.name)}</h3>
+            ${renderBrandIdentity(brand.name, { tag: "h3" })}
             <p>${escapeHtml((brand.brandsIncluded || [brand.name]).join(", "))}</p>
           </div>
           <dl>
@@ -456,7 +496,7 @@ function render() {
   renderTabs(brands);
   renderBrandPanel(brands);
   renderCompetitorMap(brands);
-  nodes.dataRows.innerHTML = brands.map(renderRow).join("");
+  renderCompetitorSourceData(brands);
   syncActivePanel();
 }
 
@@ -510,7 +550,7 @@ function renderTabs(brands) {
         <button class="tab-button${tab.id === state.activeTab ? " is-active" : ""}" type="button" data-tab="${escapeHtml(
         tab.id
       )}" aria-selected="${tab.id === state.activeTab}">
-          ${escapeHtml(tab.label)}
+          ${tab.brandName ? renderBrandIdentity(tab.label, { className: "brand-identity--tab" }) : escapeHtml(tab.label)}
         </button>
       `
     )
@@ -529,9 +569,8 @@ function handleTabClick(event) {
 function buildTabs(brands) {
   return [
     { id: "overview", label: "Overview" },
-    ...brands.map((brand, index) => ({ id: `brand:${index}`, label: brand.name, slug: slugify(brand.name) })),
-    { id: "competitor", label: "Competitor map" },
-    { id: "source", label: "Source data" }
+    ...brands.map((brand, index) => ({ id: `brand:${index}`, label: brand.name, slug: slugify(brand.name), brandName: brand.name })),
+    { id: "competitor", label: "Competitor map" }
   ];
 }
 
@@ -549,8 +588,10 @@ function syncActivePanel() {
     state.typeChart.resize();
   }
 
-  if (state.activeTab === "competitor" && state.competitorChart) {
-    state.competitorChart.resize();
+  if (state.activeTab === "competitor") {
+    state.competitorChart?.resize();
+    state.competitorImpressionsChart?.resize();
+    state.competitorInfluencerChart?.resize();
   }
 }
 
@@ -574,10 +615,10 @@ function renderBrandPanel(brands) {
     <section class="section section--brand-detail" aria-labelledby="brandDetailTitle">
       <div class="brand-detail__intro">
         <p class="eyebrow">Brand report</p>
-        <h2 id="brandDetailTitle">${escapeHtml(brand.name)}</h2>
+        ${renderBrandIdentity(brand.name, { tag: "h2", className: "brand-identity--title", id: "brandDetailTitle" })}
         <p class="summary-note">${escapeHtml(report.summary)}</p>
         <div class="brand-report__meta">
-          <span>${escapeHtml((brand.brandsIncluded || [brand.name]).join(", "))}</span>
+          <span>${renderBrandIdentity(brand.name, { className: "brand-identity--meta" })}</span>
           ${
             report.contentPreviewUrl
               ? `<a href="${escapeHtml(report.contentPreviewUrl)}" target="_blank" rel="noreferrer">Content preview</a>`
@@ -636,7 +677,7 @@ function renderBrandPanel(brands) {
                       )}</a>`
                     : escapeHtml(report.creatorActivity.mostActive.name)
                 }
-                <span>${renderMetricValueWithComparison(`${formatNumber.format(toNumber(report.creatorActivity.mostActive.posts))} posts`, brandCompare.creatorActivity.mostActivePosts, { compact: true })}</span>
+                <span>${renderMetricValueWithComparison(`${formatNumber.format(toNumber(report.creatorActivity.mostActive.posts))} content`, brandCompare.creatorActivity.mostActivePosts, { compact: true })}</span>
               </dd>
             </div>
           </dl>
@@ -1263,31 +1304,88 @@ function renderLegend(items, options = {}) {
   `;
 }
 
-function renderCompetitorMap(brands) {
-  if (!window.Chart || !nodes.competitorChart) return;
-
-  const chartData = brands.map((brand, index) => ({
-    x: toNumber(brand.posts),
+function buildCompetitorChartData(brands, metricKey) {
+  return brands.map((brand, index) => ({
+    x: metricKey === "impressions" ? toNumber(brand.impressions) : toNumber(brand.posts),
     y: engagementRate(brand),
     brandIndex: index,
     label: brand.name,
-    impressions: toNumber(brand.impressions)
+    impressions: toNumber(brand.impressions),
+    posts: toNumber(brand.posts)
   }));
+}
 
-  const maxPosts = Math.max(...chartData.map((item) => item.x), 1);
-  const maxEr = Math.max(...chartData.map((item) => item.y), 1);
+function updateCompetitorChart(chart, chartData, maxX, maxEr) {
+  chart.data.datasets[0].data = chartData;
+  chart.options.scales.x.max = maxX;
+  chart.options.scales.y.max = maxEr;
+  chart.update();
+}
 
-  if (state.competitorChart) {
-    state.competitorChart.data.datasets[0].data = chartData;
-    state.competitorChart.options.scales.x.max = Math.ceil(maxPosts * 1.12);
-    state.competitorChart.options.scales.y.max = Math.ceil(maxEr * 1.18 * 10) / 10;
-    state.competitorChart.update();
-    return;
-  }
+function buildInfluencerMatrix(brands) {
+  const creatorsByKey = new Map();
 
-  window.Chart.getChart?.(nodes.competitorChart)?.destroy();
+  brands.forEach((brand, brandIndex) => {
+    const creatorRows = Array.isArray(brand.report?.creatorBreakdown) ? brand.report.creatorBreakdown : [];
 
-  state.competitorChart = new window.Chart(nodes.competitorChart, {
+    creatorRows.forEach((creator) => {
+      const name = String(creator.name || "").trim();
+      const username = extractCreatorUsername(creator.url, name);
+      const key = username || name.toLowerCase();
+      if (!key) return;
+
+      const posts = toNumber(creator.posts);
+      const existing = creatorsByKey.get(key) || {
+        key,
+        name: name || `@${username}`,
+        username,
+        url: creator.url || "",
+        totalPosts: 0,
+        brandPosts: new Map()
+      };
+
+      existing.name = existing.name || name || `@${username}`;
+      existing.url = existing.url || creator.url || "";
+      existing.totalPosts += posts;
+      existing.brandPosts.set(brandIndex, toNumber(existing.brandPosts.get(brandIndex)) + posts);
+      creatorsByKey.set(key, existing);
+    });
+  });
+
+  const influencers = [...creatorsByKey.values()]
+    .map((entry) => ({
+      ...entry,
+      brandCount: entry.brandPosts.size
+    }))
+    .sort((a, b) => b.totalPosts - a.totalPosts || a.name.localeCompare(b.name, "sl"));
+
+  const points = [];
+
+  influencers.forEach((influencer) => {
+    influencer.brandPosts.forEach((posts, brandIndex) => {
+      if (posts <= 0) return;
+
+      points.push({
+        x: brands[brandIndex]?.name || "",
+        y: influencer.name,
+        r: Math.max(5, Math.min(21, 2 + posts * 0.32)),
+        posts,
+        brand: brands[brandIndex]?.name || "",
+        brandIndex,
+        influencer: influencer.name,
+        totalPosts: influencer.totalPosts,
+        url: influencer.url || ""
+      });
+    });
+  });
+
+  return { influencers, points };
+}
+
+function createCompetitorChart(canvas, chartStateKey, chartData, config) {
+  window.Chart.getChart?.(canvas)?.destroy();
+
+  return new window.Chart(canvas, {
     type: "scatter",
     data: {
       datasets: [
@@ -1318,7 +1416,7 @@ function renderCompetitorMap(brands) {
         const element = elements[0];
         if (!element) return;
 
-        const item = state.competitorChart.data.datasets[element.datasetIndex].data[element.index];
+        const item = state[chartStateKey].data.datasets[element.datasetIndex].data[element.index];
         state.activeTab = `brand:${item.brandIndex}`;
         updatePathForActiveTab();
         render();
@@ -1330,21 +1428,17 @@ function renderCompetitorMap(brands) {
         tooltip: {
           callbacks: {
             title: (items) => items[0]?.raw?.label || "",
-            label: (context) => [
-              `Posts: ${formatNumber.format(context.raw.x)}`,
-              `ER: ${formatPercent(context.raw.y)}%`,
-              `Impressions: ${formatNumber.format(context.raw.impressions)}`
-            ]
+            label: (context) => config.tooltipLabels(context.raw)
           }
         }
       },
       scales: {
         x: {
           min: 0,
-          max: Math.ceil(maxPosts * 1.12),
+          max: config.maxX,
           title: {
             display: true,
-            text: "More posts",
+            text: config.xTitle,
             color: "#f4f0e8",
             font: chartFont(12, 800)
           },
@@ -1358,12 +1452,13 @@ function renderCompetitorMap(brands) {
           ticks: {
             color: "#b9b2a7",
             font: chartFont(11),
-            padding: 10
+            padding: 10,
+            callback: config.xTick
           }
         },
         y: {
           min: 0,
-          max: Math.ceil(maxEr * 1.18 * 10) / 10,
+          max: config.maxEr,
           title: {
             display: true,
             text: "Higher ER",
@@ -1387,6 +1482,164 @@ function renderCompetitorMap(brands) {
       }
     },
     plugins: [scatterPointShadowPlugin(), scatterLabelPlugin()]
+  });
+}
+
+function renderCompetitorMap(brands) {
+  if (!window.Chart || !nodes.competitorChart || !nodes.competitorImpressionsChart) return;
+
+  const postsChartData = buildCompetitorChartData(brands, "posts");
+  const impressionsChartData = buildCompetitorChartData(brands, "impressions");
+  const influencerMatrix = buildInfluencerMatrix(brands);
+  const maxPosts = Math.max(...postsChartData.map((item) => item.x), 1);
+  const maxImpressions = Math.max(...impressionsChartData.map((item) => item.x), 1);
+  const maxEr = Math.max(...postsChartData.map((item) => item.y), 1);
+  const normalizedMaxEr = Math.ceil(maxEr * 1.18 * 10) / 10;
+  const normalizedMaxPosts = Math.ceil(maxPosts * 1.12);
+  const normalizedMaxImpressions = Math.ceil(maxImpressions * 1.12);
+
+  if (state.competitorChart) {
+    updateCompetitorChart(state.competitorChart, postsChartData, normalizedMaxPosts, normalizedMaxEr);
+  } else {
+    state.competitorChart = createCompetitorChart(nodes.competitorChart, "competitorChart", postsChartData, {
+      maxX: normalizedMaxPosts,
+      maxEr: normalizedMaxEr,
+      xTitle: "More posts",
+      tooltipLabels: (raw) => [
+        `Posts: ${formatNumber.format(raw.posts)}`,
+        `ER: ${formatPercent(raw.y)}%`,
+        `Impressions: ${formatNumber.format(raw.impressions)}`
+      ]
+    });
+  }
+
+  if (state.competitorImpressionsChart) {
+    updateCompetitorChart(state.competitorImpressionsChart, impressionsChartData, normalizedMaxImpressions, normalizedMaxEr);
+  } else {
+    state.competitorImpressionsChart = createCompetitorChart(
+      nodes.competitorImpressionsChart,
+      "competitorImpressionsChart",
+      impressionsChartData,
+      {
+        maxX: normalizedMaxImpressions,
+        maxEr: normalizedMaxEr,
+        xTitle: "More impressions",
+        xTick: (value) => compactNumber(value),
+        tooltipLabels: (raw) => [
+          `Impressions: ${formatNumber.format(raw.impressions)}`,
+          `ER: ${formatPercent(raw.y)}%`,
+          `Posts: ${formatNumber.format(raw.posts)}`
+        ]
+      }
+    );
+  }
+
+  renderCompetitorInfluencerMap(brands, influencerMatrix);
+}
+
+function renderCompetitorInfluencerMap(brands, influencerMatrix) {
+  if (!window.Chart || !nodes.competitorInfluencerChart || !nodes.competitorInfluencerMap) return;
+
+  const influencers = influencerMatrix?.influencers || [];
+  const points = influencerMatrix?.points || [];
+  const minHeight = Math.max(420, influencers.length * 30 + 120);
+  nodes.competitorInfluencerMap.style.height = `${Math.min(minHeight, 980)}px`;
+
+  window.Chart.getChart?.(nodes.competitorInfluencerChart)?.destroy();
+
+  state.competitorInfluencerChart = new window.Chart(nodes.competitorInfluencerChart, {
+    type: "bubble",
+    data: {
+      datasets: [
+        {
+          label: "Influencer content",
+          data: points,
+          parsing: false,
+          pointRadius: (context) => context.raw?.r || 7,
+          pointHoverRadius: (context) => (context.raw?.r || 7) + 1.5,
+          backgroundColor: (context) => influencerBubbleFill(context),
+          borderColor: (context) => influencerBubbleStroke(context),
+          borderWidth: 1.5,
+          hoverBorderWidth: 2,
+          hoverBackgroundColor: "#ffc857",
+          pointHitRadius: 12
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: {
+        duration: 700,
+        easing: "easeOutQuart"
+      },
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          callbacks: {
+            title: (items) => items[0]?.raw?.influencer || "",
+            label: (context) => {
+              const raw = context.raw || {};
+              return [`Brand: ${raw.brand}`, `Content: ${formatNumber.format(raw.posts)}`, `Creator total: ${formatNumber.format(raw.totalPosts)}`];
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: "category",
+          labels: brands.map((brand) => brand.name),
+          offset: true,
+          title: {
+            display: true,
+            text: "Brand",
+            color: "#f4f0e8",
+            font: chartFont(12, 800)
+          },
+          grid: {
+            color: "rgba(244, 240, 232, 0.075)",
+            drawTicks: false
+          },
+          border: {
+            display: false
+          },
+          ticks: {
+            color: "#f4f0e8",
+            font: chartFont(11, 700),
+            maxRotation: 0,
+            autoSkip: false,
+            padding: 12
+          }
+        },
+        y: {
+          type: "category",
+          labels: influencers.map((item) => item.name),
+          offset: true,
+          title: {
+            display: true,
+            text: "Influencer",
+            color: "#f4f0e8",
+            font: chartFont(12, 800)
+          },
+          grid: {
+            color: "rgba(244, 240, 232, 0.06)",
+            drawTicks: false
+          },
+          border: {
+            display: false
+          },
+          ticks: {
+            color: "#b9b2a7",
+            font: chartFont(11, 600),
+            padding: 12,
+            autoSkip: false
+          }
+        }
+      }
+    },
+    plugins: [bubblePointShadowPlugin()]
   });
 }
 
@@ -1429,12 +1682,53 @@ function slugify(value) {
     .replace(/^-+|-+$/g, "");
 }
 
+function normalizeBrandKey(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function getBrandLogo(name) {
+  const normalized = normalizeBrandKey(name);
+  if (!normalized) return null;
+  return (
+    brandLogos.find((item) => item.aliases.some((alias) => normalized === alias || normalized.includes(alias) || alias.includes(normalized))) ||
+    null
+  );
+}
+
+function renderBrandIdentity(name, options = {}) {
+  const { tag = "span", className = "", id = "" } = options;
+  const logo = getBrandLogo(name);
+  const classes = ["brand-identity", className].filter(Boolean).join(" ");
+  const idAttribute = id ? ` id="${escapeHtml(id)}"` : "";
+  const logoBadgeClass =
+    logo?.background === "light" ? "brand-identity__logo-badge brand-identity__logo-badge--light" : "brand-identity__logo-badge brand-identity__logo-badge--dark";
+
+  return `
+    <${tag} class="${classes}"${idAttribute}>
+      ${
+        logo
+          ? `<span class="${logoBadgeClass}"><img class="brand-identity__logo" src="${escapeHtml(logo.src)}" alt="${escapeHtml(logo.alt)}"></span>`
+          : ""
+      }
+      <span class="brand-identity__text">${escapeHtml(name || "-")}</span>
+    </${tag}>
+  `;
+}
+
+function renderBrandLine(brands) {
+  return `Brands: ${brands.map((brand) => renderBrandIdentity(brand, { className: "brand-identity--inline" })).join('<span class="brand-line__separator">·</span>')}`;
+}
+
 function renderHighlight([label, brand, value]) {
   return `
     <article class="highlight">
       <h3>${escapeHtml(label)}</h3>
       <div>
-        <strong>${escapeHtml(brand || "-")}</strong>
+        ${renderBrandIdentity(brand || "-", { tag: "strong", className: "brand-identity--highlight" })}
         <span>${escapeHtml(value)}</span>
       </div>
     </article>
@@ -1622,6 +1916,33 @@ function chartFont(size, weight = 600) {
   };
 }
 
+function influencerBubbleFill(context) {
+  const palette = [
+    ["rgba(120, 188, 232, 0.92)", "rgba(47, 111, 255, 0.5)"],
+    ["rgba(230, 84, 42, 0.92)", "rgba(159, 45, 34, 0.5)"],
+    ["rgba(88, 184, 122, 0.92)", "rgba(41, 115, 77, 0.45)"],
+    ["rgba(255, 200, 87, 0.92)", "rgba(184, 114, 18, 0.44)"],
+    ["rgba(234, 160, 160, 0.92)", "rgba(148, 59, 88, 0.44)"]
+  ];
+  const { chart } = context;
+  const point = chart.getDatasetMeta(context.datasetIndex)?.data?.[context.dataIndex];
+  const raw = context.raw || {};
+  const [inner, outer] = palette[(raw.brandIndex || 0) % palette.length];
+
+  if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return inner;
+
+  const gradient = chart.ctx.createRadialGradient(point.x - 4, point.y - 4, 1, point.x, point.y, Math.max(raw.r || 8, 10));
+  gradient.addColorStop(0, "#fff1c7");
+  gradient.addColorStop(0.38, inner);
+  gradient.addColorStop(1, outer);
+  return gradient;
+}
+
+function influencerBubbleStroke(context) {
+  const palette = ["#9bd4f7", "#ff8f68", "#75d29b", "#ffd372", "#f2b6b6"];
+  return palette[(context.raw?.brandIndex || 0) % palette.length];
+}
+
 function scatterPointFill(context) {
   const { chart } = context;
   const { ctx, chartArea } = chart;
@@ -1657,6 +1978,26 @@ function scatterPointShadowPlugin() {
   };
 }
 
+function bubblePointShadowPlugin() {
+  return {
+    id: "bubblePointShadowPlugin",
+    beforeDatasetDraw(chart, args) {
+      if (args.index !== 0) return;
+
+      chart.ctx.save();
+      chart.ctx.shadowColor = "rgba(8, 8, 8, 0.34)";
+      chart.ctx.shadowBlur = 24;
+      chart.ctx.shadowOffsetX = 0;
+      chart.ctx.shadowOffsetY = 10;
+    },
+    afterDatasetDraw(chart, args) {
+      if (args.index !== 0) return;
+
+      chart.ctx.restore();
+    }
+  };
+}
+
 function scatterLabelPlugin() {
   return {
     id: "scatterLabelPlugin",
@@ -1664,6 +2005,9 @@ function scatterLabelPlugin() {
       const { ctx, chartArea } = chart;
       const meta = chart.getDatasetMeta(0);
       const items = chart.data.datasets[0].data;
+      const labelHeight = 24;
+      const gapX = 10;
+      const gapY = 8;
 
       ctx.save();
       ctx.font = "800 12px Inter, system-ui, sans-serif";
@@ -1673,17 +2017,32 @@ function scatterLabelPlugin() {
         const label = items[index]?.label;
         if (!label) return;
 
-        const x = Math.min(point.x + 14, chartArea.right - ctx.measureText(label).width - 10);
-        const y = Math.max(chartArea.top + 10, Math.min(point.y, chartArea.bottom - 10));
+        const width = ctx.measureText(label).width + 14;
+        const boxX = Math.min(point.x + gapX, chartArea.right - width - 4);
+        const prefersAbove = point.y - gapY - labelHeight >= chartArea.top;
+        const boxY = prefersAbove
+          ? point.y - gapY - labelHeight
+          : Math.min(point.y + gapY, chartArea.bottom - labelHeight);
+        const textX = boxX + 7;
+        const textY = boxY + labelHeight / 2;
 
         ctx.fillStyle = "rgba(17, 17, 17, 0.78)";
-        const width = ctx.measureText(label).width + 14;
         ctx.beginPath();
-        ctx.roundRect(x - 7, y - 12, width, 24, 4);
+        ctx.roundRect(boxX, boxY, width, labelHeight, 4);
         ctx.fill();
 
         ctx.fillStyle = "#f4f0e8";
-        ctx.fillText(label, x, y);
+        ctx.fillText(label, textX, textY);
+
+        // Repaint the point above the label so it never gets hidden by the tag.
+        ctx.save();
+        ctx.shadowColor = "rgba(230, 84, 42, 0.92)";
+        ctx.shadowBlur = 18;
+        ctx.fillStyle = scatterPointFill({ chart, raw: items[index], element: point });
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
       });
 
       ctx.restore();
@@ -1691,19 +2050,173 @@ function scatterLabelPlugin() {
   };
 }
 
-function renderRow(item) {
+function renderCompetitorSourceData(brands) {
+  if (!nodes.competitorDataSummary || !nodes.competitorPostsTable || !nodes.competitorInfluencerTable) return;
+
+  const totals = calculateTotals(brands);
+  const averageEr = brands.length
+    ? brands.reduce((sum, brand) => sum + engagementRate(brand), 0) / brands.length
+    : 0;
+
+  nodes.competitorDataSummary.innerHTML = [
+    ["Brands", brands.length],
+    ["Posts", formatNumber.format(totals.posts)],
+    ["Impressions", formatNumber.format(totals.impressions)],
+    ["Avg. ER", `${formatPercent(averageEr)}%`]
+  ]
+    .map(
+      ([label, value]) => `
+        <div class="competitor-data-summary__item">
+          <span>${escapeHtml(String(label))}</span>
+          <strong>${escapeHtml(String(value))}</strong>
+        </div>
+      `
+    )
+    .join("");
+
+  nodes.competitorPostsTable.innerHTML = renderCompetitorMetricTable(brands, buildCompetitorPostMetrics());
+  nodes.competitorInfluencerTable.innerHTML = renderCompetitorMetricTable(brands, buildCompetitorInfluencerMetrics());
+}
+
+function renderCompetitorMetricTable(brands, metrics) {
+  const sortedBrands = brands.slice().sort((a, b) => toNumber(b.impressions) - toNumber(a.impressions));
+
   return `
-    <tr>
-      <td>${escapeHtml(item.name)}</td>
-      <td>${formatNumber.format(toNumber(item.posts))}</td>
-      <td>${formatNumber.format(toNumber(item.videoPosts || item.reels))}</td>
-      <td>${formatNumber.format(toNumber(item.photoPosts || item.staticPosts || item.posts))}</td>
-      <td>${formatNumber.format(toNumber(item.impressions))}</td>
-      <td>${formatNumber.format(toNumber(item.likes))}</td>
-      <td>${formatNumber.format(toNumber(item.comments))}</td>
-      <td>${formatPercent(engagementRate(item))}%</td>
-    </tr>
+    <thead>
+      <tr>
+        <th>Metric</th>
+        ${sortedBrands
+          .map(
+            (brand) => `
+              <th>
+                <div class="competitor-table__brand">
+                  ${renderBrandIdentity(brand.name, { tag: "strong", className: "brand-identity--table" })}
+                  <span>${formatNumber.format(toNumber(brand.impressions))} impressions</span>
+                </div>
+              </th>
+            `
+          )
+          .join("")}
+      </tr>
+    </thead>
+    <tbody>
+      ${metrics
+        .map(
+          (metric) => `
+            <tr>
+              <th scope="row">${escapeHtml(metric.label)}</th>
+              ${sortedBrands.map((brand) => `<td>${renderCompetitorMetricValue(metric.value(brand))}</td>`).join("")}
+            </tr>
+          `
+        )
+        .join("")}
+    </tbody>
   `;
+}
+
+function renderCompetitorMetricValue(value) {
+  if (value === null || value === undefined || value === "" || value === "Source needed") {
+    return `<span class="competitor-table__missing">Source needed</span>`;
+  }
+
+  if (typeof value === "string" && value.includes("competitor-table__er")) return value;
+  return escapeHtml(String(value));
+}
+
+function buildCompetitorPostMetrics() {
+  return [
+    { label: "Total posts", value: (brand) => formatNumber.format(toNumber(brand.posts)) },
+    { label: "Reels & feed posts", value: (brand) => formatNumber.format(getFeedAndReelPosts(brand)) },
+    { label: "Stories", value: (brand) => formatNumber.format(getStoryPosts(brand)) },
+    { label: "Photos (only reels & feed posts)", value: (brand) => formatNumber.format(getPhotoPosts(brand)) },
+    { label: "Videos (only reels & feed posts)", value: (brand) => formatNumber.format(getVideoPosts(brand)) },
+    { label: "Total engagement", value: (brand) => formatNumber.format(getTotalEngagement(brand)) },
+    { label: "Avg. engagement rate", value: (brand) => renderErPill(engagementRate(brand)) },
+    { label: "Total likes", value: (brand) => formatNumber.format(toNumber(brand.likes)) },
+    { label: "Avg. likes", value: (brand) => formatDecimal(averagePerPost(brand.likes, brand.posts)) },
+    { label: "Total comments", value: (brand) => formatNumber.format(toNumber(brand.comments)) },
+    { label: "Avg. comments", value: (brand) => formatDecimal(averagePerPost(brand.comments, brand.posts)) },
+    { label: "Total impressions", value: (brand) => formatNumber.format(toNumber(brand.impressions)) },
+    { label: "Avg. impressions", value: (brand) => formatDecimal(averagePerPost(brand.impressions, brand.posts)) }
+  ];
+}
+
+function buildCompetitorInfluencerMetrics() {
+  return [
+    { label: "Active influencers", value: (brand) => formatNumber.format(getActiveCreators(brand)) },
+    { label: "Avg. posts per influencer", value: (brand) => formatDecimal(getAveragePostsPerInfluencer(brand)) },
+    { label: "Avg. posts per influencer (only reels & feed posts)", value: (brand) => formatDecimal(getAverageFeedPostsPerInfluencer(brand)) }
+  ];
+}
+
+function getBrandReport(brand) {
+  return brand.report || {};
+}
+
+function getActiveCreators(brand) {
+  return toNumber(getBrandReport(brand).creatorActivity?.activeCreators) || buildCreatorBreakdown(getBrandReport(brand)).length;
+}
+
+function getStoryPosts(brand) {
+  const report = getBrandReport(brand);
+  const fromFormats = findFormatPosts(report.formats, ["story", "stories"]);
+  if (fromFormats !== null) return fromFormats;
+
+  const rows = buildCreatorBreakdown(report);
+  const fromRows = rows.reduce((sum, row) => sum + toNumber(row.stories || row.storyPosts), 0);
+  return fromRows || Math.max(0, toNumber(brand.posts) - getFeedAndReelPosts(brand));
+}
+
+function getPhotoPosts(brand) {
+  const report = getBrandReport(brand);
+  const fromFormats = findFormatPosts(report.formats, ["post", "posts", "photo", "photos"]);
+  if (fromFormats !== null) return fromFormats;
+
+  return buildCreatorBreakdown(report).reduce((sum, row) => sum + toNumber(row.photos || row.photoPosts || row.staticPosts), 0);
+}
+
+function getVideoPosts(brand) {
+  const report = getBrandReport(brand);
+  const fromFormats = findFormatPosts(report.formats, ["reel", "reels"]);
+  if (fromFormats !== null) return fromFormats;
+
+  return toNumber(brand.videoPosts || brand.reels);
+}
+
+function getFeedAndReelPosts(brand) {
+  return getPhotoPosts(brand) + getVideoPosts(brand);
+}
+
+function findFormatPosts(formats = [], keys = []) {
+  if (!Array.isArray(formats) || !formats.length) return null;
+
+  const total = formats.reduce((sum, item) => {
+    const type = normalizeMetricKey(item.type || item.name);
+    return keys.includes(type) ? sum + toNumber(item.posts) : sum;
+  }, 0);
+
+  return total > 0 ? total : null;
+}
+
+function getTotalEngagement(brand) {
+  return toNumber(brand.likes) + toNumber(brand.comments);
+}
+
+function getAveragePostsPerInfluencer(brand) {
+  return averagePerPost(brand.posts, getActiveCreators(brand));
+}
+
+function getAverageFeedPostsPerInfluencer(brand) {
+  return averagePerPost(getFeedAndReelPosts(brand), getActiveCreators(brand));
+}
+
+function renderErPill(value) {
+  return `<span class="competitor-table__er">${formatPercent(value)}%</span>`;
+}
+
+function formatDecimal(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return "Source needed";
+  return formatNumber.format(roundToSingleDecimal(Number(value)));
 }
 
 async function handleFileImport(event) {
