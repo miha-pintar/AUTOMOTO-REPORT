@@ -420,6 +420,7 @@ h3 {
   width: 1.8em;
   height: 1.8em;
   flex: 0 0 auto;
+  overflow: hidden;
   border-radius: 999px;
   border: 1px solid rgba(244, 240, 232, 0.12);
   box-shadow:
@@ -442,6 +443,8 @@ h3 {
   flex: 0 0 auto;
   object-fit: contain;
   object-position: center;
+  transform: scale(var(--brand-logo-scale, 1));
+  transform-origin: center;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.22));
 }
 
@@ -490,14 +493,14 @@ h3 {
 
 .brand-identity--meta .brand-identity__logo,
 .brand-identity--table .brand-identity__logo {
-  width: 0.82em;
-  height: 0.82em;
+  width: 0.72em;
+  height: 0.72em;
 }
 
 .brand-identity--meta .brand-identity__logo-badge,
 .brand-identity--table .brand-identity__logo-badge {
-  width: 1.4em;
-  height: 1.4em;
+  width: 1.22em;
+  height: 1.22em;
 }
 
 .hero__visual {
@@ -1764,15 +1767,24 @@ h3 {
 }
 
 .competitor-table {
-  min-width: 920px;
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
 }
 
 .competitor-table thead th {
-  background: rgba(255, 255, 255, 0.04);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 22px 18px;
+  vertical-align: bottom;
+  background:
+    linear-gradient(180deg, rgba(30, 30, 30, 0.98), rgba(18, 18, 18, 0.98));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .competitor-table--matrix {
-  min-width: 1100px;
+  min-width: 0;
 }
 
 .competitor-table--matrix thead th:first-child,
@@ -1780,13 +1792,27 @@ h3 {
   position: sticky;
   left: 0;
   z-index: 1;
-  min-width: 250px;
+  width: 23%;
+  min-width: 0;
   background:
     linear-gradient(180deg, rgba(24, 24, 24, 0.98), rgba(12, 12, 12, 0.98));
 }
 
 .competitor-table--matrix thead th:first-child {
   z-index: 2;
+}
+
+.competitor-table__metric-head {
+  text-align: left;
+  color: var(--muted);
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.competitor-table__brand-cell {
+  min-width: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .competitor-table--matrix tbody th {
@@ -1805,19 +1831,24 @@ h3 {
 }
 
 .competitor-table__brand {
-  display: grid;
-  gap: 4px;
+  display: flex;
+  align-items: center;
+  min-height: 84px;
+  min-width: 0;
 }
 
 .competitor-table__brand strong {
-  display: inline-flex;
-  align-items: center;
-  font-size: 0.98rem;
+  width: 100%;
 }
 
-.competitor-table__brand span {
-  color: var(--muted);
-  font-size: 0.8rem;
+.competitor-table__brand .brand-identity__logo {
+  width: 1.02em;
+  height: 1.02em;
+}
+
+.competitor-table__brand .brand-identity__logo-badge {
+  width: 1.82em;
+  height: 1.82em;
 }
 
 .competitor-table__er {
@@ -1834,6 +1865,34 @@ h3 {
 
 .competitor-map--influencers {
   min-height: 620px;
+}
+
+.chart-hover-tooltip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 4;
+  padding: 8px 10px;
+  border: 1px solid rgba(244, 240, 232, 0.16);
+  border-radius: 10px;
+  background: rgba(17, 17, 17, 0.92);
+  color: #f4f0e8;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -92%);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.24);
+}
+
+.chart-hover-tooltip.is-visible {
+  opacity: 1;
+  transform: translate(-50%, calc(-100% + 2px));
 }
 
 .competitor-influencer-list-shell {
@@ -1884,9 +1943,16 @@ h3 {
   font-style: italic;
 }
 
+.competitor-table__brand-name .brand-identity__text {
+  font-size: 0.76rem;
+  line-height: 1;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
 table {
   width: 100%;
-  min-width: 860px;
+  max-width: 100%;
   border-collapse: collapse;
 }
 

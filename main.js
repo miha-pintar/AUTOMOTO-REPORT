@@ -17,7 +17,8 @@ const brandLogos = [
     aliases: ["ga adriatic"],
     src: "./assets/content/GA-logo.png",
     alt: "GA Adriatic logo",
-    background: "light"
+    background: "light",
+    scale: 1.9
   },
   {
     aliases: ["vw", "volkswagen"],
@@ -62,6 +63,7 @@ const brandLogos = [
     background: "light"
   }
 ];
+const brandLogoImageCache = new Map();
 
 const state = {
   data: null,
@@ -1621,7 +1623,10 @@ function renderCompetitorInfluencerMap(brands, influencerMatrix) {
             display: true,
             text: "Brand",
             color: "#f4f0e8",
-            font: chartFont(12, 800)
+            font: chartFont(12, 800),
+            padding: {
+              bottom: 18
+            }
           },
           grid: {
             color: "rgba(244, 240, 232, 0.075)",
@@ -1631,11 +1636,12 @@ function renderCompetitorInfluencerMap(brands, influencerMatrix) {
             display: false
           },
           ticks: {
-            color: "#f4f0e8",
+            color: "rgba(244, 240, 232, 0)",
             font: chartFont(11, 700),
             maxRotation: 0,
             autoSkip: false,
-            padding: 12
+            padding: 14,
+            callback: () => ""
           }
         },
         y: {
@@ -1664,7 +1670,7 @@ function renderCompetitorInfluencerMap(brands, influencerMatrix) {
         }
       }
     },
-    plugins: [bubblePointShadowPlugin()]
+    plugins: [bubblePointShadowPlugin(), competitorAxisLogoPlugin()]
   });
 }
 
@@ -1724,6 +1730,34 @@ function getBrandLogo(name) {
   );
 }
 
+function getBrandLogoImage(name, chart = null) {
+  const logo = getBrandLogo(name);
+  if (!logo?.src) return null;
+
+  let cached = brandLogoImageCache.get(logo.src);
+  if (!cached) {
+    const image = new Image();
+    cached = { image, loaded: false, failed: false, pendingCharts: new Set() };
+    image.addEventListener("load", () => {
+      cached.loaded = true;
+      cached.pendingCharts.forEach((pendingChart) => pendingChart.draw());
+      cached.pendingCharts.clear();
+    });
+    image.addEventListener("error", () => {
+      cached.failed = true;
+      cached.pendingCharts.clear();
+    });
+    image.src = logo.src;
+    brandLogoImageCache.set(logo.src, cached);
+  }
+
+  if (!cached.loaded && !cached.failed && chart) {
+    cached.pendingCharts.add(chart);
+  }
+
+  return { ...logo, image: cached.loaded ? cached.image : null };
+}
+
 function formatBrandDisplayName(name) {
   const normalized = normalizeBrandKey(name);
   if (normalized === "vw") return "Volkswagen";
@@ -1737,12 +1771,13 @@ function renderBrandIdentity(name, options = {}) {
   const idAttribute = id ? ` id="${escapeHtml(id)}"` : "";
   const logoBadgeClass =
     logo?.background === "light" ? "brand-identity__logo-badge brand-identity__logo-badge--light" : "brand-identity__logo-badge brand-identity__logo-badge--dark";
+  const logoStyle = logo?.scale ? ` style="--brand-logo-scale:${escapeHtml(String(logo.scale))}"` : "";
 
   return `
     <${tag} class="${classes}"${idAttribute}>
       ${
         logo
-          ? `<span class="${logoBadgeClass}"><img class="brand-identity__logo" src="${escapeHtml(logo.src)}" alt="${escapeHtml(logo.alt)}"></span>`
+          ? `<span class="${logoBadgeClass}"><img class="brand-identity__logo" src="${escapeHtml(logo.src)}" alt="${escapeHtml(logo.alt)}"${logoStyle}></span>`
           : ""
       }
       <span class="brand-identity__text">${escapeHtml(formatBrandDisplayName(name))}</span>
@@ -2029,6 +2064,141 @@ function bubblePointShadowPlugin() {
   };
 }
 
+function drawChartBrandBadge(ctx, x, y, size, logo) {
+  if (!logo?.image) return;
+
+  const radius = size / 2;
+  const gradient = ctx.createLinearGradient(x, y, x, y + size);
+  if (logo.background === "light") {
+    gradient.addColorStop(0, "rgba(255, 255, 255, 0.98)");
+    gradient.addColorStop(1, "rgba(236, 236, 236, 0.96)");
+  } else {
+    gradient.addColorStop(0, "rgba(38, 38, 38, 0.98)");
+    gradient.addColorStop(1, "rgba(20, 20, 20, 0.96)");
+  }
+
+  ctx.save();
+  ctx.shadowColor = "rgba(0, 0, 0, 0.24)";
+  ctx.shadowBlur = 18;
+  ctx.shadowOffsetY = 8;
+  ctx.fillStyle = gradient;
+  ctx.strokeStyle = logo.background === "light" ? "rgba(17, 17, 17, 0.08)" : "rgba(244, 240, 232, 0.12)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(x + radius, y + radius, radius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+
+  const padding = size * 0.22;
+  const availableSize = size - padding * 2;
+  const imageWidth = logo.image.naturalWidth || logo.image.width || availableSize;
+  const imageHeight = logo.image.naturalHeight || logo.image.height || availableSize;
+  const logoScale = logo.scale || 1;
+  const scale = Math.min(availableSize / imageWidth, availableSize / imageHeight) * logoScale;
+  const drawWidth = imageWidth * scale;
+  const drawHeight = imageHeight * scale;
+  const drawX = x + padding + (availableSize - drawWidth) / 2;
+  const drawY = y + padding + (availableSize - drawHeight) / 2;
+
+  ctx.drawImage(logo.image, drawX, drawY, drawWidth, drawHeight);
+}
+
+function ensureChartHoverTooltip(chart) {
+  const container = chart.canvas?.parentElement;
+  if (!container) return null;
+
+  let tooltip = container.querySelector(".chart-hover-tooltip");
+  if (!tooltip) {
+    tooltip = document.createElement("div");
+    tooltip.className = "chart-hover-tooltip";
+    tooltip.setAttribute("aria-hidden", "true");
+    container.appendChild(tooltip);
+  }
+
+  return tooltip;
+}
+
+function hideChartHoverTooltip(chart) {
+  const tooltip = ensureChartHoverTooltip(chart);
+  if (!tooltip) return;
+  tooltip.classList.remove("is-visible");
+  tooltip.textContent = "";
+  tooltip.setAttribute("aria-hidden", "true");
+}
+
+function showChartHoverTooltip(chart, text, region) {
+  const tooltip = ensureChartHoverTooltip(chart);
+  if (!tooltip || !region) return;
+
+  const canvasOffsetLeft = chart.canvas?.offsetLeft || 0;
+  const canvasOffsetTop = chart.canvas?.offsetTop || 0;
+  tooltip.textContent = formatBrandDisplayName(text);
+  tooltip.style.left = `${canvasOffsetLeft + region.x + region.size / 2}px`;
+  tooltip.style.top = `${canvasOffsetTop + region.y + 2}px`;
+  tooltip.classList.add("is-visible");
+  tooltip.setAttribute("aria-hidden", "false");
+}
+
+function competitorAxisLogoPlugin() {
+  return {
+    id: "competitorAxisLogoPlugin",
+    afterDraw(chart) {
+      const xScale = chart.scales?.x;
+      const labels = xScale?.getLabels?.() || [];
+      if (!xScale || !labels.length) return;
+
+      const { ctx } = chart;
+      const badgeSize = 30;
+      const y = xScale.top + 22;
+      const regions = [];
+
+      ctx.save();
+      labels.forEach((label, index) => {
+        const logo = getBrandLogoImage(label, chart);
+        if (!logo?.image) return;
+
+        const centerX = xScale.getPixelForTick(index);
+        const x = centerX - badgeSize / 2;
+        drawChartBrandBadge(ctx, x, y, badgeSize, logo);
+        regions.push({ label, x, y, size: badgeSize });
+      });
+      ctx.restore();
+      chart.$competitorAxisLogoRegions = regions;
+    },
+    afterEvent(chart, args) {
+      const event = args.event;
+      const regions = chart.$competitorAxisLogoRegions || [];
+      if (!event || !regions.length) {
+        hideChartHoverTooltip(chart);
+        return;
+      }
+
+      const hoveredRegion = regions.find(
+        (region) =>
+          event.x >= region.x &&
+          event.x <= region.x + region.size &&
+          event.y >= region.y &&
+          event.y <= region.y + region.size
+      );
+
+      if (hoveredRegion) {
+        chart.canvas.style.cursor = "pointer";
+        showChartHoverTooltip(chart, hoveredRegion.label, hoveredRegion);
+        return;
+      }
+
+      chart.canvas.style.cursor = "";
+      hideChartHoverTooltip(chart);
+    },
+    afterDestroy(chart) {
+      chart.canvas.style.cursor = "";
+      hideChartHoverTooltip(chart);
+      delete chart.$competitorAxisLogoRegions;
+    }
+  };
+}
+
 function scatterLabelPlugin() {
   return {
     id: "scatterLabelPlugin",
@@ -2045,31 +2215,43 @@ function scatterLabelPlugin() {
       ctx.textBaseline = "middle";
 
       meta.data.forEach((point, index) => {
-        const label = items[index]?.label;
+        const item = items[index];
+        const label = item?.label;
         if (!label) return;
 
-        const width = ctx.measureText(label).width + 14;
-        const boxX = Math.min(point.x + gapX, chartArea.right - width - 4);
         const prefersAbove = point.y - gapY - labelHeight >= chartArea.top;
         const boxY = prefersAbove
           ? point.y - gapY - labelHeight
           : Math.min(point.y + gapY, chartArea.bottom - labelHeight);
-        const textX = boxX + 7;
-        const textY = boxY + labelHeight / 2;
+        const logo = getBrandLogoImage(label, chart);
 
-        ctx.fillStyle = "rgba(17, 17, 17, 0.78)";
-        ctx.beginPath();
-        ctx.roundRect(boxX, boxY, width, labelHeight, 4);
-        ctx.fill();
+        if (logo?.image) {
+          const badgeSize = 28;
+          const badgeY = prefersAbove
+            ? point.y - gapY - badgeSize
+            : Math.min(point.y + gapY, chartArea.bottom - badgeSize);
+          const badgeX = Math.min(point.x + gapX, chartArea.right - badgeSize - 4);
+          drawChartBrandBadge(ctx, badgeX, badgeY, badgeSize, logo);
+        } else {
+          const width = ctx.measureText(label).width + 14;
+          const boxX = Math.min(point.x + gapX, chartArea.right - width - 4);
+          const textX = boxX + 7;
+          const textY = boxY + labelHeight / 2;
 
-        ctx.fillStyle = "#f4f0e8";
-        ctx.fillText(label, textX, textY);
+          ctx.fillStyle = "rgba(17, 17, 17, 0.78)";
+          ctx.beginPath();
+          ctx.roundRect(boxX, boxY, width, labelHeight, 4);
+          ctx.fill();
+
+          ctx.fillStyle = "#f4f0e8";
+          ctx.fillText(label, textX, textY);
+        }
 
         // Repaint the point above the label so it never gets hidden by the tag.
         ctx.save();
         ctx.shadowColor = "rgba(230, 84, 42, 0.92)";
         ctx.shadowBlur = 18;
-        ctx.fillStyle = scatterPointFill({ chart, raw: items[index], element: point });
+        ctx.fillStyle = scatterPointFill({ chart, raw: item, element: point });
         ctx.beginPath();
         ctx.arc(point.x, point.y, 6, 0, Math.PI * 2);
         ctx.fill();
@@ -2094,14 +2276,13 @@ function renderCompetitorMetricTable(brands, metrics) {
   return `
     <thead>
       <tr>
-        <th>Metric</th>
+        <th scope="col" class="competitor-table__metric-head">Metric</th>
         ${sortedBrands
           .map(
             (brand) => `
-              <th>
+              <th scope="col" class="competitor-table__brand-cell">
                 <div class="competitor-table__brand">
-                  ${renderBrandIdentity(brand.name, { tag: "strong", className: "brand-identity--table" })}
-                  <span>${formatCompetitorCompact(toNumber(brand.impressions))} impressions</span>
+                  ${renderBrandIdentity(brand.name, { tag: "strong", className: "brand-identity--table competitor-table__brand-name" })}
                 </div>
               </th>
             `
