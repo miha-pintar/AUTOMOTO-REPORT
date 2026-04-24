@@ -1673,7 +1673,7 @@ function renderCompetitorInfluencerMap(brands, influencerMatrix) {
         }
       }
     },
-    plugins: [bubblePointShadowPlugin(), competitorAxisLogoPlugin()]
+    plugins: [competitorAxisLogoPlugin()]
   });
 }
 
@@ -1994,24 +1994,13 @@ function chartFont(size, weight = 600) {
 
 function influencerBubbleFill(context) {
   const palette = [
-    ["rgba(120, 188, 232, 0.92)", "rgba(47, 111, 255, 0.5)"],
-    ["rgba(230, 84, 42, 0.92)", "rgba(159, 45, 34, 0.5)"],
-    ["rgba(88, 184, 122, 0.92)", "rgba(41, 115, 77, 0.45)"],
-    ["rgba(255, 200, 87, 0.92)", "rgba(184, 114, 18, 0.44)"],
-    ["rgba(234, 160, 160, 0.92)", "rgba(148, 59, 88, 0.44)"]
+    "rgba(120, 188, 232, 0.92)",
+    "rgba(230, 84, 42, 0.92)",
+    "rgba(88, 184, 122, 0.92)",
+    "rgba(255, 200, 87, 0.92)",
+    "rgba(234, 160, 160, 0.92)"
   ];
-  const { chart } = context;
-  const point = chart.getDatasetMeta(context.datasetIndex)?.data?.[context.dataIndex];
-  const raw = context.raw || {};
-  const [inner, outer] = palette[(raw.brandIndex || 0) % palette.length];
-
-  if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return inner;
-
-  const gradient = chart.ctx.createRadialGradient(point.x - 4, point.y - 4, 1, point.x, point.y, Math.max(raw.r || 8, 10));
-  gradient.addColorStop(0, "#fff1c7");
-  gradient.addColorStop(0.38, inner);
-  gradient.addColorStop(1, outer);
-  return gradient;
+  return palette[(context.raw?.brandIndex || 0) % palette.length];
 }
 
 function influencerBubbleStroke(context) {
