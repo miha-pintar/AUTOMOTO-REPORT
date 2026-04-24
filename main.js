@@ -2276,11 +2276,12 @@ function scatterLabelPlugin() {
 function renderCompetitorSourceData(brands) {
   if (!nodes.competitorPostsTable || !nodes.competitorInfluencerTable) return;
 
-  nodes.competitorPostsTable.innerHTML = renderCompetitorMetricTable(brands, buildCompetitorPostMetrics());
-  nodes.competitorInfluencerTable.innerHTML = renderCompetitorMetricTable(brands, buildCompetitorInfluencerMetrics());
+  const comparisonBrand = getCompetitorTableComparisonBrand(brands);
+  nodes.competitorPostsTable.innerHTML = renderCompetitorMetricTable(brands, buildCompetitorPostMetrics(), comparisonBrand);
+  nodes.competitorInfluencerTable.innerHTML = renderCompetitorMetricTable(brands, buildCompetitorInfluencerMetrics(), comparisonBrand);
 }
 
-function renderCompetitorMetricTable(brands, metrics) {
+function renderCompetitorMetricTable(brands, metrics, comparisonBrand = null) {
   const sortedBrands = brands.slice().sort((a, b) => toNumber(b.impressions) - toNumber(a.impressions));
 
   return `
@@ -2306,7 +2307,16 @@ function renderCompetitorMetricTable(brands, metrics) {
           (metric) => `
             <tr>
               <th scope="row">${escapeHtml(metric.label)}</th>
-              ${sortedBrands.map((brand) => `<td>${renderCompetitorMetricValue(metric.value(brand, sortedBrands))}</td>`).join("")}
+              ${sortedBrands
+                .map((brand) => {
+                  const value = metric.value(brand);
+                  const comparison =
+                    comparisonBrand && comparisonBrand.name !== brand.name
+                      ? compareMetricValue(value.raw, metric.value(comparisonBrand).raw)
+                      : null;
+                  return `<td>${renderCompetitorMetricValue(value, comparison)}</td>`;
+                })
+                .join("")}
             </tr>
           `
         )
@@ -2315,19 +2325,19 @@ function renderCompetitorMetricTable(brands, metrics) {
   `;
 }
 
-function renderCompetitorMetricValue(value) {
+function renderCompetitorMetricValue(value, comparison = null) {
   if (value && typeof value === "object" && !Array.isArray(value)) {
     if (value.missing) {
       return `<span class="competitor-table__missing">Source needed</span>`;
     }
 
     const content = value.html ? value.display : escapeHtml(String(value.display ?? ""));
-    if (!hasMetricValue(value.share)) return content;
+    if (!comparison) return content;
 
     return `
-      <span class="competitor-table__value">
-        <strong>${content}</strong>
-        <span>${formatPercent(value.share)}%</span>
+      <span class="metric-value-stack metric-value-stack--compact">
+        <span class="metric-value-stack__value">${content}</span>
+        ${renderComparisonBadge(comparison)}
       </span>
     `;
   }
@@ -2341,90 +2351,45 @@ function renderCompetitorMetricValue(value) {
 }
 
 function buildCompetitorPostMetrics() {
-  const totalValue = (brands, getter) => brands.reduce((sum, brand) => sum + toNumber(getter(brand)), 0);
-
   return [
-    {
-      label: "Total posts",
-      value: (brand, brands) =>
-        buildCompetitorValue(formatCompetitorCompact(toNumber(brand.posts)), percentShare(brand.posts, totalValue(brands, (item) => item.posts)))
-    },
-    {
-      label: "Reels & feed posts",
-      value: (brand) => buildCompetitorValue(formatCompetitorCompact(getFeedAndReelPosts(brand)), percentShare(getFeedAndReelPosts(brand), brand.posts))
-    },
-    {
-      label: "Stories",
-      value: (brand) => buildCompetitorValue(formatCompetitorCompact(getStoryPosts(brand)), percentShare(getStoryPosts(brand), brand.posts))
-    },
-    {
-      label: "Photos (only reels & feed posts)",
-      value: (brand) => buildCompetitorValue(formatCompetitorCompact(getPhotoPosts(brand)), percentShare(getPhotoPosts(brand), brand.posts))
-    },
-    {
-      label: "Videos (only reels & feed posts)",
-      value: (brand) => buildCompetitorValue(formatCompetitorCompact(getVideoPosts(brand)), percentShare(getVideoPosts(brand), brand.posts))
-    },
-    {
-      label: "Total engagement",
-      value: (brand, brands) =>
-        buildCompetitorValue(
-          formatCompetitorCompact(getTotalEngagement(brand)),
-          percentShare(getTotalEngagement(brand), totalValue(brands, (item) => getTotalEngagement(item)))
-        )
-    },
-    { label: "Avg. engagement rate", value: (brand) => buildCompetitorValue(renderErPill(engagementRate(brand)), null, { html: true }) },
-    {
-      label: "Total likes",
-      value: (brand, brands) =>
-        buildCompetitorValue(formatCompetitorCompact(toNumber(brand.likes)), percentShare(brand.likes, totalValue(brands, (item) => item.likes)))
-    },
-    { label: "Avg. likes", value: (brand) => buildCompetitorValue(formatCompetitorCompact(averagePerPost(brand.likes, brand.posts))) },
-    {
-      label: "Total comments",
-      value: (brand, brands) =>
-        buildCompetitorValue(
-          formatCompetitorCompact(toNumber(brand.comments)),
-          percentShare(brand.comments, totalValue(brands, (item) => item.comments))
-        )
-    },
-    { label: "Avg. comments", value: (brand) => buildCompetitorValue(formatCompetitorCompact(averagePerPost(brand.comments, brand.posts))) },
-    {
-      label: "Total impressions",
-      value: (brand, brands) =>
-        buildCompetitorValue(
-          formatCompetitorCompact(toNumber(brand.impressions)),
-          percentShare(brand.impressions, totalValue(brands, (item) => item.impressions))
-        )
-    },
-    { label: "Avg. impressions", value: (brand) => buildCompetitorValue(formatCompetitorCompact(averagePerPost(brand.impressions, brand.posts))) }
+    { label: "Total posts", value: (brand) => buildCompetitorValue(formatCompetitorCompact(toNumber(brand.posts)), toNumber(brand.posts)) },
+    { label: "Reels & feed posts", value: (brand) => buildCompetitorValue(formatCompetitorCompact(getFeedAndReelPosts(brand)), getFeedAndReelPosts(brand)) },
+    { label: "Stories", value: (brand) => buildCompetitorValue(formatCompetitorCompact(getStoryPosts(brand)), getStoryPosts(brand)) },
+    { label: "Photos (only reels & feed posts)", value: (brand) => buildCompetitorValue(formatCompetitorCompact(getPhotoPosts(brand)), getPhotoPosts(brand)) },
+    { label: "Videos (only reels & feed posts)", value: (brand) => buildCompetitorValue(formatCompetitorCompact(getVideoPosts(brand)), getVideoPosts(brand)) },
+    { label: "Total engagement", value: (brand) => buildCompetitorValue(formatCompetitorCompact(getTotalEngagement(brand)), getTotalEngagement(brand)) },
+    { label: "Avg. engagement rate", value: (brand) => buildCompetitorValue(renderErPill(engagementRate(brand)), engagementRate(brand), { html: true }) },
+    { label: "Total likes", value: (brand) => buildCompetitorValue(formatCompetitorCompact(toNumber(brand.likes)), toNumber(brand.likes)) },
+    { label: "Avg. likes", value: (brand) => buildCompetitorValue(formatCompetitorCompact(averagePerPost(brand.likes, brand.posts)), averagePerPost(brand.likes, brand.posts)) },
+    { label: "Total comments", value: (brand) => buildCompetitorValue(formatCompetitorCompact(toNumber(brand.comments)), toNumber(brand.comments)) },
+    { label: "Avg. comments", value: (brand) => buildCompetitorValue(formatCompetitorCompact(averagePerPost(brand.comments, brand.posts)), averagePerPost(brand.comments, brand.posts)) },
+    { label: "Total impressions", value: (brand) => buildCompetitorValue(formatCompetitorCompact(toNumber(brand.impressions)), toNumber(brand.impressions)) },
+    { label: "Avg. impressions", value: (brand) => buildCompetitorValue(formatCompetitorCompact(averagePerPost(brand.impressions, brand.posts)), averagePerPost(brand.impressions, brand.posts)) }
   ];
 }
 
 function buildCompetitorInfluencerMetrics() {
   return [
-    {
-      label: "Active influencers",
-      value: (brand, brands) =>
-        buildCompetitorValue(
-          formatCompetitorCompact(getActiveCreators(brand)),
-          percentShare(getActiveCreators(brand), brands.reduce((sum, item) => sum + getActiveCreators(item), 0))
-        )
-    },
-    { label: "Avg. posts per influencer", value: (brand) => buildCompetitorValue(formatCompetitorCompact(getAveragePostsPerInfluencer(brand))) },
+    { label: "Active influencers", value: (brand) => buildCompetitorValue(formatCompetitorCompact(getActiveCreators(brand)), getActiveCreators(brand)) },
+    { label: "Avg. posts per influencer", value: (brand) => buildCompetitorValue(formatCompetitorCompact(getAveragePostsPerInfluencer(brand)), getAveragePostsPerInfluencer(brand)) },
     {
       label: "Avg. posts per influencer (only reels & feed posts)",
-      value: (brand) => buildCompetitorValue(formatCompetitorCompact(getAverageFeedPostsPerInfluencer(brand)))
+      value: (brand) => buildCompetitorValue(formatCompetitorCompact(getAverageFeedPostsPerInfluencer(brand)), getAverageFeedPostsPerInfluencer(brand))
     }
   ];
 }
 
-function buildCompetitorValue(display, share = null, options = {}) {
+function getCompetitorTableComparisonBrand(brands) {
+  if (!state.comparison.enabled || !state.comparison.brandName) return null;
+  return brands.find((brand) => brand.name === state.comparison.brandName) || null;
+}
+
+function buildCompetitorValue(display, raw = null, options = {}) {
   const missing = display === null || display === undefined || display === "" || display === "Source needed";
-  const shareNumber = share === null || share === undefined ? null : toNumber(share);
+  const rawNumber = raw === null || raw === undefined ? null : toNumber(raw);
   return {
     display,
-    share: Number.isFinite(shareNumber) ? shareNumber : null,
+    raw: Number.isFinite(rawNumber) ? rawNumber : null,
     html: Boolean(options.html),
     missing
   };

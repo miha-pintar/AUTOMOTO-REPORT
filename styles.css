@@ -1950,24 +1950,6 @@ h3 {
   white-space: normal;
 }
 
-.competitor-table__value {
-  display: inline-flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.competitor-table__value strong {
-  color: var(--text);
-  font-size: 0.98rem;
-  font-weight: 700;
-}
-
-.competitor-table__value span {
-  color: var(--muted);
-  font-size: 0.76rem;
-  line-height: 1.1;
-}
-
 table {
   width: 100%;
   max-width: 100%;
