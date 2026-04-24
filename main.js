@@ -1571,7 +1571,10 @@ function renderCompetitorInfluencerMap(brands, influencerMatrix) {
   const minHeight = Math.max(420, influencers.length * 30 + 120);
   nodes.competitorInfluencerMap.style.height = `${Math.min(minHeight, 980)}px`;
 
-  window.Chart.getChart?.(nodes.competitorInfluencerChart)?.destroy();
+  if (state.competitorInfluencerChart) {
+    updateCompetitorInfluencerChart(state.competitorInfluencerChart, brands, influencers, points);
+    return;
+  }
 
   state.competitorInfluencerChart = new window.Chart(nodes.competitorInfluencerChart, {
     type: "bubble",
@@ -1672,6 +1675,13 @@ function renderCompetitorInfluencerMap(brands, influencerMatrix) {
     },
     plugins: [bubblePointShadowPlugin(), competitorAxisLogoPlugin()]
   });
+}
+
+function updateCompetitorInfluencerChart(chart, brands, influencers, points) {
+  chart.data.datasets[0].data = points;
+  chart.options.scales.x.labels = brands.map((brand) => brand.name);
+  chart.options.scales.y.labels = influencers.map((item) => item.name);
+  chart.update();
 }
 
 function applyTabFromPath() {
@@ -2296,7 +2306,7 @@ function renderCompetitorMetricTable(brands, metrics) {
           (metric) => `
             <tr>
               <th scope="row">${escapeHtml(metric.label)}</th>
-              ${sortedBrands.map((brand) => `<td>${renderCompetitorMetricValue(metric.value(brand))}</td>`).join("")}
+              ${sortedBrands.map((brand) => `<td>${renderCompetitorMetricValue(metric.value(brand, sortedBrands))}</td>`).join("")}
             </tr>
           `
         )
@@ -2306,6 +2316,22 @@ function renderCompetitorMetricTable(brands, metrics) {
 }
 
 function renderCompetitorMetricValue(value) {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    if (value.missing) {
+      return `<span class="competitor-table__missing">Source needed</span>`;
+    }
+
+    const content = value.html ? value.display : escapeHtml(String(value.display ?? ""));
+    if (!hasMetricValue(value.share)) return content;
+
+    return `
+      <span class="competitor-table__value">
+        <strong>${content}</strong>
+        <span>${formatPercent(value.share)}%</span>
+      </span>
+    `;
+  }
+
   if (value === null || value === undefined || value === "" || value === "Source needed") {
     return `<span class="competitor-table__missing">Source needed</span>`;
   }
@@ -2315,29 +2341,93 @@ function renderCompetitorMetricValue(value) {
 }
 
 function buildCompetitorPostMetrics() {
+  const totalValue = (brands, getter) => brands.reduce((sum, brand) => sum + toNumber(getter(brand)), 0);
+
   return [
-    { label: "Total posts", value: (brand) => formatCompetitorCompact(toNumber(brand.posts)) },
-    { label: "Reels & feed posts", value: (brand) => formatCompetitorCompact(getFeedAndReelPosts(brand)) },
-    { label: "Stories", value: (brand) => formatCompetitorCompact(getStoryPosts(brand)) },
-    { label: "Photos (only reels & feed posts)", value: (brand) => formatCompetitorCompact(getPhotoPosts(brand)) },
-    { label: "Videos (only reels & feed posts)", value: (brand) => formatCompetitorCompact(getVideoPosts(brand)) },
-    { label: "Total engagement", value: (brand) => formatCompetitorCompact(getTotalEngagement(brand)) },
-    { label: "Avg. engagement rate", value: (brand) => renderErPill(engagementRate(brand)) },
-    { label: "Total likes", value: (brand) => formatCompetitorCompact(toNumber(brand.likes)) },
-    { label: "Avg. likes", value: (brand) => formatCompetitorCompact(averagePerPost(brand.likes, brand.posts)) },
-    { label: "Total comments", value: (brand) => formatCompetitorCompact(toNumber(brand.comments)) },
-    { label: "Avg. comments", value: (brand) => formatCompetitorCompact(averagePerPost(brand.comments, brand.posts)) },
-    { label: "Total impressions", value: (brand) => formatCompetitorCompact(toNumber(brand.impressions)) },
-    { label: "Avg. impressions", value: (brand) => formatCompetitorCompact(averagePerPost(brand.impressions, brand.posts)) }
+    {
+      label: "Total posts",
+      value: (brand, brands) =>
+        buildCompetitorValue(formatCompetitorCompact(toNumber(brand.posts)), percentShare(brand.posts, totalValue(brands, (item) => item.posts)))
+    },
+    {
+      label: "Reels & feed posts",
+      value: (brand) => buildCompetitorValue(formatCompetitorCompact(getFeedAndReelPosts(brand)), percentShare(getFeedAndReelPosts(brand), brand.posts))
+    },
+    {
+      label: "Stories",
+      value: (brand) => buildCompetitorValue(formatCompetitorCompact(getStoryPosts(brand)), percentShare(getStoryPosts(brand), brand.posts))
+    },
+    {
+      label: "Photos (only reels & feed posts)",
+      value: (brand) => buildCompetitorValue(formatCompetitorCompact(getPhotoPosts(brand)), percentShare(getPhotoPosts(brand), brand.posts))
+    },
+    {
+      label: "Videos (only reels & feed posts)",
+      value: (brand) => buildCompetitorValue(formatCompetitorCompact(getVideoPosts(brand)), percentShare(getVideoPosts(brand), brand.posts))
+    },
+    {
+      label: "Total engagement",
+      value: (brand, brands) =>
+        buildCompetitorValue(
+          formatCompetitorCompact(getTotalEngagement(brand)),
+          percentShare(getTotalEngagement(brand), totalValue(brands, (item) => getTotalEngagement(item)))
+        )
+    },
+    { label: "Avg. engagement rate", value: (brand) => buildCompetitorValue(renderErPill(engagementRate(brand)), null, { html: true }) },
+    {
+      label: "Total likes",
+      value: (brand, brands) =>
+        buildCompetitorValue(formatCompetitorCompact(toNumber(brand.likes)), percentShare(brand.likes, totalValue(brands, (item) => item.likes)))
+    },
+    { label: "Avg. likes", value: (brand) => buildCompetitorValue(formatCompetitorCompact(averagePerPost(brand.likes, brand.posts))) },
+    {
+      label: "Total comments",
+      value: (brand, brands) =>
+        buildCompetitorValue(
+          formatCompetitorCompact(toNumber(brand.comments)),
+          percentShare(brand.comments, totalValue(brands, (item) => item.comments))
+        )
+    },
+    { label: "Avg. comments", value: (brand) => buildCompetitorValue(formatCompetitorCompact(averagePerPost(brand.comments, brand.posts))) },
+    {
+      label: "Total impressions",
+      value: (brand, brands) =>
+        buildCompetitorValue(
+          formatCompetitorCompact(toNumber(brand.impressions)),
+          percentShare(brand.impressions, totalValue(brands, (item) => item.impressions))
+        )
+    },
+    { label: "Avg. impressions", value: (brand) => buildCompetitorValue(formatCompetitorCompact(averagePerPost(brand.impressions, brand.posts))) }
   ];
 }
 
 function buildCompetitorInfluencerMetrics() {
   return [
-    { label: "Active influencers", value: (brand) => formatCompetitorCompact(getActiveCreators(brand)) },
-    { label: "Avg. posts per influencer", value: (brand) => formatCompetitorCompact(getAveragePostsPerInfluencer(brand)) },
-    { label: "Avg. posts per influencer (only reels & feed posts)", value: (brand) => formatCompetitorCompact(getAverageFeedPostsPerInfluencer(brand)) }
+    {
+      label: "Active influencers",
+      value: (brand, brands) =>
+        buildCompetitorValue(
+          formatCompetitorCompact(getActiveCreators(brand)),
+          percentShare(getActiveCreators(brand), brands.reduce((sum, item) => sum + getActiveCreators(item), 0))
+        )
+    },
+    { label: "Avg. posts per influencer", value: (brand) => buildCompetitorValue(formatCompetitorCompact(getAveragePostsPerInfluencer(brand))) },
+    {
+      label: "Avg. posts per influencer (only reels & feed posts)",
+      value: (brand) => buildCompetitorValue(formatCompetitorCompact(getAverageFeedPostsPerInfluencer(brand)))
+    }
   ];
+}
+
+function buildCompetitorValue(display, share = null, options = {}) {
+  const missing = display === null || display === undefined || display === "" || display === "Source needed";
+  const shareNumber = share === null || share === undefined ? null : toNumber(share);
+  return {
+    display,
+    share: Number.isFinite(shareNumber) ? shareNumber : null,
+    html: Boolean(options.html),
+    missing
+  };
 }
 
 function getBrandReport(brand) {
